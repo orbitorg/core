@@ -1,0 +1,6 @@
+{
+  "metadata": "ipfs://QmdnCvn5Z9S4rrbkk4k7V8VxfZ1VyFK4jCZD49cDj9uDST",
+  "deposit": "1000000000000uluna",
+  "title": "Proposal: Removal of Forked Modules from Terra Classic",
+  "summary": "OrbitLabs proposes to remove the forked mainline modules from the Terra Classic blockchain to improve maintainability, reduce technical debt, and align with the broader Cosmos ecosystem"
+}
