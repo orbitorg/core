@@ -44,6 +44,7 @@ import (
 	"github.com/classic-terra/core/v3/app/keepers"
 	terraappparams "github.com/classic-terra/core/v3/app/params"
 	anteauth "github.com/classic-terra/core/v3/custom/auth/ante"
+	customserver "github.com/classic-terra/core/v3/server"
 
 	// upgrades
 	"github.com/classic-terra/core/v3/app/upgrades"
@@ -452,6 +453,9 @@ func (app *TerraApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIC
 	if apiConfig.Swagger {
 		RegisterSwaggerAPI(apiSvr.Router)
 	}
+
+	// Apply custom middleware
+	apiSvr.Router.Use(customserver.BlockHeightMiddleware)
 }
 
 // RegisterTxService implements the Application.RegisterTxService method.
