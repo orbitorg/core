@@ -230,3 +230,20 @@ func (s *IntegrationTestSuite) TestFeeTaxWasm() {
 	taxAmount = initialization.TaxRate.MulInt(transferAmount).TruncateInt()
 	s.Require().Equal(balance3.Amount, balance2.Amount.Sub(transferAmount).Sub(taxAmount))
 }
+
+func (s *IntegrationTestSuite) TestSubmitOracleTx() {
+	chain := s.configurer.GetChainConfig(0)
+	node, err := chain.GetDefaultNode()
+	s.Require().NoError(err)
+
+	testAddr := node.CreateWallet("test")
+	transferAmount := sdkmath.NewInt(100000000)
+	node.BankSend(fmt.Sprintf("%suluna", transferAmount.Mul(sdk.NewInt(4))), initialization.ValidatorWalletName, testAddr)
+
+	// submit oracle tx
+	node.SubmitOracleAggregatePrevote("test", "1.234uusd")
+
+	time.Sleep(5 * time.Second)
+	node.SubmitOracleAggregateVote("test", "1.234uusd")
+
+}
