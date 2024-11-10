@@ -9,6 +9,12 @@ import (
 	"os"
 	"path/filepath"
 
+	"cosmossdk.io/math"
+	"github.com/classic-terra/core/v3/app/mempool"
+	signer_extraction "github.com/skip-mev/block-sdk/adapters/signer_extraction_adapter"
+	"github.com/skip-mev/block-sdk/block"
+	blockbase "github.com/skip-mev/block-sdk/block/base"
+
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/cast"
@@ -33,7 +39,6 @@ import (
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -43,7 +48,6 @@ import (
 
 	"github.com/classic-terra/core/v3/app/keepers"
 	terraappparams "github.com/classic-terra/core/v3/app/params"
-	anteauth "github.com/classic-terra/core/v3/custom/auth/ante"
 	customserver "github.com/classic-terra/core/v3/server"
 
 	// upgrades
@@ -157,8 +161,6 @@ func NewTerraApp(
 	baseAppOptions = append(baseAppOptions, baseapp.SetIAVLDisableFastNode(iavlDisableFastNode))
 
 	bApp := baseapp.NewBaseApp(appName, logger, db, txConfig.TxDecoder(), baseAppOptions...)
-	bApp.SetCommitMultiStoreTracer(traceStore)
-	bApp.SetVersion(version.Version)
 	bApp.SetInterfaceRegistry(interfaceRegistry)
 
 	app := &TerraApp{
@@ -267,9 +269,27 @@ func NewTerraApp(
 		panic(err)
 	}
 
+	signerExtractor := signer_extraction.NewDefaultAdapter()
+	defaultLaneConfig := blockbase.LaneConfig{
+		Logger:          app.Logger(),
+		TxEncoder:       app.txConfig.TxEncoder(),
+		TxDecoder:       app.txConfig.TxDecoder(),
+		MaxBlockSpace:   math.LegacyZeroDec(),
+		MaxTxs:          0,
+		SignerExtractor: signerExtractor,
+	}
+
+	defaultLane := mempool.NewDefaultLane(defaultLaneConfig)
+	lanes := []block.Lane{defaultLane}
+	mempool, err := block.NewLanedMempool(app.Logger(), lanes)
+	if err != nil {
+		panic(err)
+	}
+
+	app.SetMempool(mempool)
+
 	app.SetAnteHandler(anteHandler)
 	app.SetPostHandler(postHandler)
-	app.SetPrepareProposal(app.PreBlocker)
 	app.SetEndBlocker(app.EndBlocker)
 
 	// must be before Loading version
@@ -311,49 +331,6 @@ func (app *TerraApp) DefaultGenesis() map[string]json.RawMessage {
 func (app *TerraApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	BeginBlockForks(ctx, app)
 	return app.mm.BeginBlock(ctx, req)
-}
-
-func (app *TerraApp) PreBlocker(ctx sdk.Context, req abci.RequestPrepareProposal) abci.ResponsePrepareProposal {
-	// get current txs
-	currentTxs := req.Txs
-
-	// Create slices for oracle and non-oracle txs
-	oracleTxs := make([][]byte, 0)
-	otherTxs := make([][]byte, 0)
-
-	// Track seen txs to prevent duplicates
-	seenTxs := make(map[string]bool)
-
-	// Separate oracle and non-oracle txs
-	for _, tx := range currentTxs {
-		// Skip if we've seen this tx before
-		txHash := string(tx)
-		if seenTxs[txHash] {
-			continue
-		}
-		seenTxs[txHash] = true
-
-		// Decode the transaction
-		txDecoder := app.txConfig.TxDecoder()
-		decodedTx, err := txDecoder(tx)
-		if err != nil {
-			continue
-		}
-
-		// Check if it's an oracle tx
-		if anteauth.IsOracleTx(decodedTx.GetMsgs()) {
-			oracleTxs = append(oracleTxs, tx)
-		} else {
-			otherTxs = append(otherTxs, tx)
-		}
-	}
-
-	// Combine txs with oracle txs first
-	orderedTxs := append(oracleTxs, otherTxs...)
-
-	return abci.ResponsePrepareProposal{
-		Txs: orderedTxs,
-	}
 }
 
 // EndBlocker application updates every end block
