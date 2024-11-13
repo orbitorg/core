@@ -2,6 +2,7 @@ package interchaintest
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"testing"
 	"time"
@@ -16,7 +17,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 )
-
 
 func TestOracle(t *testing.T) {
 	if testing.Short() {
@@ -68,7 +68,11 @@ func TestOracle(t *testing.T) {
 	err = testutil.WaitForBlocks(ctx, 1, terra)
 	require.NoError(t, err)
 
-	users := interchaintest.GetAndFundTestUsers(t, ctx, "default", genesisWalletAmount, terra, terra, terra, terra, terra, terra)
+	var users []ibc.Wallet
+
+	for i := 0; i < len(terra.Validators)*2; i++ {
+		users = append(users, interchaintest.GetAndFundTestUsers(t, ctx, fmt.Sprintf("default-%d", i), genesisWalletAmount, terra)[0])
+	}
 
 	err = testutil.WaitForBlocks(ctx, 5, terra)
 	require.NoError(t, err)
@@ -78,10 +82,11 @@ func TestOracle(t *testing.T) {
 	fundingErrorCh := make(chan error, len(terra.Validators))
 	var wg sync.WaitGroup
 
+	wg.Add(len(terra.Validators))
 	// Run oracle operations
-	for i, val := range terra.Validators {
-		wg.Add(2)
-		go func(validator *cosmos.ChainNode, validatorIndex int) {
+	for _, val := range terra.Validators {
+		val := val
+		go func(validator *cosmos.ChainNode) {
 			defer wg.Done()
 
 			// Seeding phase
@@ -115,12 +120,12 @@ func TestOracle(t *testing.T) {
 					return
 				}
 			}
-		}(val, i)
+		}(val)
 
 	}
 
-	for i, _ := range terra.Validators{
-		wg.Add(1)
+	wg.Add(len(terra.Validators))
+	for i, _ := range terra.Validators {
 		go func(validatorIndex int) {
 			defer wg.Done()
 
@@ -137,8 +142,6 @@ func TestOracle(t *testing.T) {
 					continue
 				}
 
-
-
 				// Second transfer
 				err = terra.SendFunds(ctx, users[2*validatorIndex+1].KeyName(), ibc.WalletAmount{
 					Address: string(users[2*validatorIndex].Address()),
@@ -150,10 +153,14 @@ func TestOracle(t *testing.T) {
 					fundingErrorCh <- err
 					continue
 				}
+
+				if err := testutil.WaitForBlocks(ctx, 1, terra); err != nil {
+					fundingErrorCh <- err
+					continue
+				}
 			}
 		}(i)
 	}
-
 
 	// Wait for all goroutines to complete
 	wg.Wait()
