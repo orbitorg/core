@@ -71,109 +71,138 @@ func TestOracle(t *testing.T) {
 	var users []ibc.Wallet
 
 	for i := 0; i < len(terra.Validators)*2; i++ {
-		users = append(users, interchaintest.GetAndFundTestUsers(t, ctx, fmt.Sprintf("default-%d", i), genesisWalletAmount, terra)[0])
+		users = append(users, interchaintest.GetAndFundTestUsers(t, ctx, "default", genesisWalletAmount, terra)[0])
 	}
 
-	err = testutil.WaitForBlocks(ctx, 5, terra)
+	err = testutil.WaitForBlocks(ctx, 10, terra)
 	require.NoError(t, err)
 
-	// Create error channels for both operations
+	height, _ := terra.Height(ctx)
+	// Create error channels for operations
 	oracleErrorCh := make(chan error, len(terra.Validators))
-	fundingErrorCh := make(chan error, len(terra.Validators))
 	var wg sync.WaitGroup
 
-	wg.Add(len(terra.Validators))
-	// Run oracle operations
+	wg.Add(1)
 	for _, val := range terra.Validators {
-		val := val
 		go func(validator *cosmos.ChainNode) {
 			defer wg.Done()
-
-			// Seeding phase
-			if err := helpers.ExecOracleMsgAggragatePrevote(ctx, validator, "salt", "1.123uusd"); err != nil {
-				oracleErrorCh <- err
-				return
-			}
-
-			// Wait for initial block
-			if err := testutil.WaitForBlocks(ctx, 1, terra); err != nil {
-				oracleErrorCh <- err
-				return
-			}
-
-			// Oracle voting phase
 			for i := 0; i < 2; i++ {
+				// Seeding phase
 				if err := helpers.ExecOracleMsgAggragatePrevote(ctx, validator, "salt", "1.123uusd"); err != nil {
 					oracleErrorCh <- err
 					return
 				}
 
-				time.Sleep(500 * time.Millisecond)
-
-				if err := helpers.ExecOracleMsgAggregateVote(ctx, validator, "salt", "1.123uusd"); err != nil {
+				// Wait for initial block
+				if err := testutil.WaitForBlocks(ctx, 1, terra); err != nil {
 					oracleErrorCh <- err
 					return
 				}
 
-				if err := testutil.WaitForBlocks(ctx, 5, terra); err != nil {
-					oracleErrorCh <- err
-					return
+				// Oracle voting phase
+				for i := 0; i < 2; i++ {
+					if err := helpers.ExecOracleMsgAggragatePrevote(ctx, validator, "salt", "1.123uusd"); err != nil {
+						oracleErrorCh <- err
+						return
+					}
+
+					time.Sleep(500 * time.Millisecond)
+
+					if err := helpers.ExecOracleMsgAggregateVote(ctx, validator, "salt", "1.123uusd"); err != nil {
+						oracleErrorCh <- err
+						return
+					}
+
+					if err := testutil.WaitForBlocks(ctx, 5, terra); err != nil {
+						oracleErrorCh <- err
+						return
+					}
 				}
 			}
 		}(val)
 
 	}
 
+	numOfBankSendLoop := 5
 	wg.Add(len(terra.Validators))
-	for i, _ := range terra.Validators {
-		go func(validatorIndex int) {
-			defer wg.Done()
+	go func() {
+		defer wg.Done()
+		// First transfer
+		for idx := 0; idx < numOfBankSendLoop; idx++ {
+			err := terra.SendFunds(ctx, users[idx%numVals].KeyName(), ibc.WalletAmount{
+				Address: users[0].FormattedAddress(),
+				Denom:   terra.Config().Denom,
+				Amount:  sdk.OneInt(),
+			})
 
-			for j := 0; j < 3; j++ {
-				// First transfer
-				err := terra.SendFunds(ctx, users[2*validatorIndex+1].KeyName(), ibc.WalletAmount{
-					Address: string(users[2*validatorIndex].Address()),
-					Denom:   terra.Config().Denom,
-					Amount:  sdk.OneInt(),
-				})
+			if err != nil {
+				fmt.Println(err)
+			}
 
-				if err != nil {
-					fundingErrorCh <- err
-					continue
+			// Second transfer
+			err = terra.SendFunds(ctx, users[idx%numVals+1].KeyName(), ibc.WalletAmount{
+				Address: users[0].FormattedAddress(),
+				Denom:   terra.Config().Denom,
+				Amount:  sdk.OneInt(),
+			})
+
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			if err := testutil.WaitForBlocks(ctx, 1, terra); err != nil {
+				fmt.Println(err)
+			}
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for i := 0; i < 10; i++ {
+			txs, err := terra.Validators[2].FindTxs(ctx, height+uint64(i)-1)
+			convertedTxs := make([]Tx, len(txs))
+			for i, tx := range txs {
+				convertedEvents := make([]Event, len(tx.Events))
+
+				for j, event := range tx.Events {
+					convertedEvents[j] = Event{
+						Type:       event.Type,
+						Attributes: make([]EventAttribute, len(event.Attributes)),
+					}
+
+					for k, attr := range event.Attributes {
+						convertedEvents[j].Attributes[k] = EventAttribute{
+							Key:   string(attr.Key),
+							Value: string(attr.Value),
+						}
+					}
 				}
 
-				// Second transfer
-				err = terra.SendFunds(ctx, users[2*validatorIndex+1].KeyName(), ibc.WalletAmount{
-					Address: string(users[2*validatorIndex].Address()),
-					Denom:   terra.Config().Denom,
-					Amount:  sdk.OneInt(),
-				})
-
-				if err != nil {
-					fundingErrorCh <- err
-					continue
-				}
-
-				if err := testutil.WaitForBlocks(ctx, 1, terra); err != nil {
-					fundingErrorCh <- err
-					continue
+				convertedTxs[i] = Tx{
+					Data:   tx.Data,
+					Events: convertedEvents,
 				}
 			}
-		}(i)
-	}
+			for _, tx := range convertedTxs {
+				fmt.Println(tx.Events[0].Type)
+			}
+
+			if !isOraclePrioritized(convertedTxs) {
+				fmt.Println("Oracle transactions are not prioritized")
+			}
+			require.NoError(t, err)
+
+			testutil.WaitForBlocks(ctx, 1, terra)
+		}
+	}()
 
 	// Wait for all goroutines to complete
 	wg.Wait()
 	close(oracleErrorCh)
-	close(fundingErrorCh)
 
 	// Check for any errors that occurred in oracle operations
 	for err := range oracleErrorCh {
-		require.NoError(t, err)
-	}
-
-	// Check for any errors that occurred in funding operations
-	for err := range fundingErrorCh {
 		require.NoError(t, err)
 	}
 
@@ -185,4 +214,57 @@ func TestOracle(t *testing.T) {
 	terraValidators, _, err := helpers.UnmarshalValidators(*config.EncodingConfig, stdout)
 	require.NoError(t, err)
 	require.Equal(t, len(terraValidators), 3)
+}
+
+type Tx struct {
+	// For Tendermint transactions, this should be encoded as JSON.
+	// Otherwise, this should be a human-readable format if possible.
+	Data []byte
+
+	// Events associated with the transaction, if applicable.
+	Events []Event
+}
+
+// Event is an alternative representation of tendermint/abci/types.Event,
+// so that the blockdb package does not depend directly on tendermint.
+type Event struct {
+	Type       string
+	Attributes []EventAttribute
+
+	// Notably, not including the Index field from the tendermint event.
+	// The ABCI docs state:
+	//
+	// "The index flag notifies the Tendermint indexer to index the attribute. The value of the index flag is non-deterministic and may vary across different nodes in the network."
+}
+
+type EventAttribute struct {
+	Key, Value string
+}
+
+func isOraclePrioritized(tx []Tx) bool {
+	if len(tx) == 0 {
+		return true
+	}
+	lastOracleIdx := -1
+	firstNonOracleIdx := -1
+	for i, t := range tx {
+		if isOracleTx(t) {
+			lastOracleIdx = i
+			if firstNonOracleIdx != -1 {
+				break
+			}
+		} else if firstNonOracleIdx == -1 {
+			firstNonOracleIdx = i
+		}
+	}
+	return lastOracleIdx < firstNonOracleIdx
+
+}
+func isOracleTx(tx Tx) bool {
+	for _, event := range tx.Events {
+		if event.Type == "oracle" {
+			return true
+		}
+	}
+	return false
 }
