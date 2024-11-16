@@ -28,10 +28,10 @@ type IntegrationTestSuite struct {
 }
 
 func TestIntegrationTestSuite(t *testing.T) {
-	// isEnabled := os.Getenv(e2eEnabledEnv)
-	// if isEnabled != "True" {
-	// 	t.Skipf("e2e test is disabled. To run, set %s to True", e2eEnabledEnv)
-	// }
+	isEnabled := os.Getenv(e2eEnabledEnv)
+	if isEnabled != "True" {
+		t.Skipf("e2e test is disabled. To run, set %s to True", e2eEnabledEnv)
+	}
 	suite.Run(t, new(IntegrationTestSuite))
 }
 
