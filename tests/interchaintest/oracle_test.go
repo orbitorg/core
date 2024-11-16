@@ -135,9 +135,7 @@ func TestOracle(t *testing.T) {
 				Amount:  sdk.OneInt(),
 			})
 
-			if err != nil {
-				fmt.Println(err)
-			}
+			require.NoError(t, err)
 
 			// Second transfer
 			err = terra.SendFunds(ctx, users[idx%numVals+1].KeyName(), ibc.WalletAmount{
@@ -146,13 +144,10 @@ func TestOracle(t *testing.T) {
 				Amount:  sdk.OneInt(),
 			})
 
-			if err != nil {
-				fmt.Println(err)
-			}
+			require.NoError(t, err)
 
-			if err := testutil.WaitForBlocks(ctx, 1, terra); err != nil {
-				fmt.Println(err)
-			}
+			err = testutil.WaitForBlocks(ctx, 1, terra)
+			require.NoError(t, err)
 		}
 	}()
 
@@ -173,8 +168,8 @@ func TestOracle(t *testing.T) {
 
 					for k, attr := range event.Attributes {
 						convertedEvents[j].Attributes[k] = EventAttribute{
-							Key:   string(attr.Key),
-							Value: string(attr.Value),
+							Key:   attr.Key,
+							Value: attr.Value,
 						}
 					}
 				}
@@ -184,8 +179,11 @@ func TestOracle(t *testing.T) {
 					Events: convertedEvents,
 				}
 			}
-			for _, tx := range convertedTxs {
-				fmt.Println(tx.Events[0].Type)
+			for i, tx := range convertedTxs {
+				fmt.Println("Tx: ", i)
+				for _, event := range tx.Events {
+					fmt.Println(event.Attributes)
+				}
 			}
 
 			if !isOraclePrioritized(convertedTxs) {
@@ -257,13 +255,15 @@ func isOraclePrioritized(tx []Tx) bool {
 			firstNonOracleIdx = i
 		}
 	}
-	return lastOracleIdx < firstNonOracleIdx
+	return lastOracleIdx == -1 || lastOracleIdx < firstNonOracleIdx
 
 }
 func isOracleTx(tx Tx) bool {
 	for _, event := range tx.Events {
-		if event.Type == "oracle" {
-			return true
+		for _, attr := range event.Attributes {
+			if attr.Key == "oracle" {
+				return true
+			}
 		}
 	}
 	return false
