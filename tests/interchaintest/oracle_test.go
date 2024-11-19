@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/classic-terra/core/v3/test/interchaintest/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -65,142 +64,108 @@ func TestOracle(t *testing.T) {
 		_ = ic.Close()
 	})
 
-	err = testutil.WaitForBlocks(ctx, 1, terra)
+	require.NoError(t, testutil.WaitForBlocks(ctx, 1, terra))
+
+	// Fund for 8 users
+	users := interchaintest.GetAndFundTestUsers(t, ctx, "default", genesisWalletAmount, terra, terra, terra, terra, terra, terra, terra, terra, terra)
+
+	require.NoError(t, testutil.WaitForBlocks(ctx, 5, terra))
+
+	height1, err := terra.Height(ctx)
 	require.NoError(t, err)
 
-	var users []ibc.Wallet
-
-	for i := 0; i < len(terra.Validators)*2; i++ {
-		users = append(users, interchaintest.GetAndFundTestUsers(t, ctx, "default", genesisWalletAmount, terra)[0])
-	}
-
-	err = testutil.WaitForBlocks(ctx, 10, terra)
-	require.NoError(t, err)
-
-	height, _ := terra.Height(ctx)
 	// Create error channels for operations
-	oracleErrorCh := make(chan error, len(terra.Validators))
+	oracleErrCh := make(chan error, len(terra.Validators))
 	var wg sync.WaitGroup
 
-	wg.Add(1)
+	wg.Add(len(terra.Validators))
 	for _, val := range terra.Validators {
+		val := val
 		go func(validator *cosmos.ChainNode) {
 			defer wg.Done()
 			for i := 0; i < 2; i++ {
-				// Seeding phase
 				if err := helpers.ExecOracleMsgAggragatePrevote(ctx, validator, "salt", "1.123uusd"); err != nil {
-					oracleErrorCh <- err
+					oracleErrCh <- err
 					return
 				}
-
-				// Wait for initial block
 				if err := testutil.WaitForBlocks(ctx, 1, terra); err != nil {
-					oracleErrorCh <- err
+					oracleErrCh <- err
 					return
 				}
-
-				// Oracle voting phase
-				for i := 0; i < 2; i++ {
-					if err := helpers.ExecOracleMsgAggragatePrevote(ctx, validator, "salt", "1.123uusd"); err != nil {
-						oracleErrorCh <- err
-						return
-					}
-
-					time.Sleep(500 * time.Millisecond)
-
-					if err := helpers.ExecOracleMsgAggregateVote(ctx, validator, "salt", "1.123uusd"); err != nil {
-						oracleErrorCh <- err
-						return
-					}
-
-					if err := testutil.WaitForBlocks(ctx, 5, terra); err != nil {
-						oracleErrorCh <- err
-						return
-					}
+				if err := helpers.ExecOracleMsgAggregateVote(ctx, validator, "salt", "1.123uusd"); err != nil {
+					oracleErrCh <- err
+					return
+				}
+				if err := testutil.WaitForBlocks(ctx, 5, terra); err != nil {
+					oracleErrCh <- err
+					return
 				}
 			}
 		}(val)
-
 	}
 
-	numOfBankSendLoop := 5
-	wg.Add(len(terra.Validators))
-	go func() {
-		defer wg.Done()
-		// First transfer
-		for idx := 0; idx < numOfBankSendLoop; idx++ {
-			err := terra.SendFunds(ctx, users[idx%numVals].KeyName(), ibc.WalletAmount{
+	wg.Add(len(users))
+	for i := range users {
+		i := i
+		go func() {
+			defer wg.Done()
+			err := terra.SendFunds(ctx, users[i].KeyName(), ibc.WalletAmount{
 				Address: users[0].FormattedAddress(),
 				Denom:   terra.Config().Denom,
 				Amount:  sdk.OneInt(),
 			})
-
 			require.NoError(t, err)
-
-			// Second transfer
-			err = terra.SendFunds(ctx, users[idx%numVals+1].KeyName(), ibc.WalletAmount{
-				Address: users[0].FormattedAddress(),
-				Denom:   terra.Config().Denom,
-				Amount:  sdk.OneInt(),
-			})
-
-			require.NoError(t, err)
-
-			err = testutil.WaitForBlocks(ctx, 1, terra)
-			require.NoError(t, err)
-		}
-	}()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for i := 0; i < 10; i++ {
-			txs, err := terra.Validators[2].FindTxs(ctx, height+uint64(i)-1)
-			convertedTxs := make([]Tx, len(txs))
-			for i, tx := range txs {
-				convertedEvents := make([]Event, len(tx.Events))
-
-				for j, event := range tx.Events {
-					convertedEvents[j] = Event{
-						Type:       event.Type,
-						Attributes: make([]EventAttribute, len(event.Attributes)),
-					}
-
-					for k, attr := range event.Attributes {
-						convertedEvents[j].Attributes[k] = EventAttribute{
-							Key:   attr.Key,
-							Value: attr.Value,
-						}
-					}
-				}
-
-				convertedTxs[i] = Tx{
-					Data:   tx.Data,
-					Events: convertedEvents,
-				}
-			}
-			for i, tx := range convertedTxs {
-				fmt.Println("Tx: ", i)
-				for _, event := range tx.Events {
-					fmt.Println(event.Attributes)
-				}
-			}
-
-			if !isOraclePrioritized(convertedTxs) {
-				fmt.Println("Oracle transactions are not prioritized")
-			}
-			require.NoError(t, err)
-
-			testutil.WaitForBlocks(ctx, 1, terra)
-		}
-	}()
+			require.NoError(t, testutil.WaitForBlocks(ctx, 1, terra))
+		}()
+	}
 
 	// Wait for all goroutines to complete
 	wg.Wait()
-	close(oracleErrorCh)
+	close(oracleErrCh)
 
 	// Check for any errors that occurred in oracle operations
-	for err := range oracleErrorCh {
+	for err := range oracleErrCh {
+		require.NoError(t, err)
+	}
+
+	height2, err := terra.Height(ctx)
+	require.NoError(t, err)
+
+	for h := height1; h <= height2; h++ {
+		txs, err := terra.Validators[2].FindTxs(ctx, h)
+		convertedTxs := make([]Tx, len(txs))
+		for i, tx := range txs {
+			convertedEvents := make([]Event, len(tx.Events))
+
+			for j, event := range tx.Events {
+				convertedEvents[j] = Event{
+					Type:       event.Type,
+					Attributes: make([]EventAttribute, len(event.Attributes)),
+				}
+
+				for k, attr := range event.Attributes {
+					convertedEvents[j].Attributes[k] = EventAttribute{
+						Key:   attr.Key,
+						Value: attr.Value,
+					}
+				}
+			}
+
+			convertedTxs[i] = Tx{
+				Data:   tx.Data,
+				Events: convertedEvents,
+			}
+		}
+		for i, tx := range convertedTxs {
+			fmt.Println("Tx: ", i)
+			for _, event := range tx.Events {
+				fmt.Println(event.Attributes)
+			}
+		}
+
+		if !isOraclePrioritized(convertedTxs) {
+			fmt.Println("Oracle transactions are not prioritized")
+		}
 		require.NoError(t, err)
 	}
 
