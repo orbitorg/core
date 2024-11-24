@@ -9,11 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"cosmossdk.io/math"
-	"github.com/classic-terra/core/v3/app/mempool"
-	signer_extraction "github.com/skip-mev/block-sdk/adapters/signer_extraction_adapter"
-	"github.com/skip-mev/block-sdk/block"
-	blockbase "github.com/skip-mev/block-sdk/block/base"
+	mempool2 "github.com/classic-terra/core/v3/app/mempool"
 
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
@@ -159,6 +155,17 @@ func NewTerraApp(
 	iavlDisableFastNode := cast.ToBool(appOpts.Get(server.FlagDisableIAVLFastNode))
 	baseAppOptions = append(baseAppOptions, baseapp.SetIAVLCacheSize(iavlCacheSize))
 	baseAppOptions = append(baseAppOptions, baseapp.SetIAVLDisableFastNode(iavlDisableFastNode))
+	baseAppOptions = append(baseAppOptions, func(app *baseapp.BaseApp) {
+		mempool := mempool2.NewFifoMempool()
+		if maxTxs := cast.ToInt(appOpts.Get(server.FlagMempoolMaxTxs)); maxTxs >= 0 {
+			mempool = mempool2.NewFifoMempool(mempool2.FifoMaxTxOpt(maxTxs))
+		}
+		handler := baseapp.NewDefaultProposalHandler(mempool, app)
+		app.SetMempool(mempool)
+		app.SetTxEncoder(txConfig.TxEncoder())
+		app.SetPrepareProposal(handler.PrepareProposalHandler())
+		app.SetProcessProposal(handler.ProcessProposalHandler())
+	})
 
 	bApp := baseapp.NewBaseApp(appName, logger, db, txConfig.TxDecoder(), baseAppOptions...)
 	bApp.SetInterfaceRegistry(interfaceRegistry)
@@ -269,25 +276,6 @@ func NewTerraApp(
 		panic(err)
 	}
 
-	signerExtractor := signer_extraction.NewDefaultAdapter()
-	defaultLaneConfig := blockbase.LaneConfig{
-		Logger:          app.Logger(),
-		TxEncoder:       app.txConfig.TxEncoder(),
-		TxDecoder:       app.txConfig.TxDecoder(),
-		MaxBlockSpace:   math.LegacyZeroDec(),
-		MaxTxs:          0,
-		SignerExtractor: signerExtractor,
-	}
-
-	defaultLane := mempool.NewDefaultLane(defaultLaneConfig)
-	lanes := []block.Lane{defaultLane}
-	mempool, err := block.NewLanedMempool(app.Logger(), lanes)
-	if err != nil {
-		panic(err)
-	}
-
-	app.SetMempool(mempool)
-
 	app.SetAnteHandler(anteHandler)
 	app.SetPostHandler(postHandler)
 	app.SetEndBlocker(app.EndBlocker)
@@ -351,11 +339,6 @@ func (app *TerraApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abc
 // LoadHeight loads a particular height
 func (app *TerraApp) LoadHeight(height int64) error {
 	return app.LoadVersion(height)
-}
-
-// GetTxConfig for testing
-func (app *TerraApp) GetTxConfig() client.TxConfig {
-	return app.txConfig
 }
 
 // ModuleAccountAddrs returns all the app's module account addresses.
@@ -505,4 +488,9 @@ func (app *TerraApp) setupUpgradeHandlers() {
 			),
 		)
 	}
+}
+
+// GetTxConfig for testing
+func (app *TerraApp) GetTxConfig() client.TxConfig {
+	return app.txConfig
 }
