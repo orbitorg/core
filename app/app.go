@@ -150,11 +150,14 @@ func NewTerraApp(
 	txConfig := encodingConfig.TxConfig
 
 	invCheckPeriod := cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod))
-
 	iavlCacheSize := cast.ToInt(appOpts.Get(server.FlagIAVLCacheSize))
 	iavlDisableFastNode := cast.ToBool(appOpts.Get(server.FlagDisableIAVLFastNode))
+
+	// option for cosmos sdk
 	baseAppOptions = append(baseAppOptions, baseapp.SetIAVLCacheSize(iavlCacheSize))
 	baseAppOptions = append(baseAppOptions, baseapp.SetIAVLDisableFastNode(iavlDisableFastNode))
+
+	// option for mempool
 	baseAppOptions = append(baseAppOptions, func(app *baseapp.BaseApp) {
 		mempool := mempool2.NewFifoMempool()
 		if maxTxs := cast.ToInt(appOpts.Get(server.FlagMempoolMaxTxs)); maxTxs >= 0 {
