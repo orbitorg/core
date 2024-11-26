@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	DefaultMaxMemoLength     = 256
+	DefaultMaxMemoLength     = 1024 // need 1024 to work with skip protocol
 	DefaultMaxReceiverLength = 128
 )
 
