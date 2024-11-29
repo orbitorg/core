@@ -24,7 +24,7 @@ func TestOracle(t *testing.T) {
 
 	t.Parallel()
 
-	numVals := 3
+	numVals := 5
 	numFullNodes := 3
 
 	config, err := createConfig()
@@ -66,8 +66,12 @@ func TestOracle(t *testing.T) {
 
 	require.NoError(t, testutil.WaitForBlocks(ctx, 1, terra))
 
-	// Fund for 8 users
-	users := interchaintest.GetAndFundTestUsers(t, ctx, "default", genesisWalletAmount, terra, terra, terra, terra, terra, terra, terra, terra, terra)
+	// Fund for 50 users
+	fundChains := []ibc.Chain{}
+	for i := 0; i < 10; i++ {
+		fundChains = append(fundChains, terra)
+	}
+	users := interchaintest.GetAndFundTestUsers(t, ctx, "default", genesisWalletAmount, fundChains...)
 
 	require.NoError(t, testutil.WaitForBlocks(ctx, 5, terra))
 
@@ -78,12 +82,13 @@ func TestOracle(t *testing.T) {
 	oracleErrCh := make(chan error, len(terra.Validators))
 	var wg sync.WaitGroup
 
+	// Create oracle txs for all validators
 	wg.Add(len(terra.Validators))
 	for _, val := range terra.Validators {
 		val := val
 		go func(validator *cosmos.ChainNode) {
 			defer wg.Done()
-			for i := 0; i < 2; i++ {
+			for i := 0; i < 5; i++ {
 				if err := helpers.ExecOracleMsgAggragatePrevote(ctx, validator, "salt", "1.123uusd"); err != nil {
 					oracleErrCh <- err
 					return
@@ -104,6 +109,7 @@ func TestOracle(t *testing.T) {
 		}(val)
 	}
 
+	// Send bank txs for all users.
 	wg.Add(len(users))
 	for i := range users {
 		i := i
@@ -115,6 +121,17 @@ func TestOracle(t *testing.T) {
 				Amount:  sdk.OneInt(),
 			})
 			require.NoError(t, err)
+			require.NoError(t, testutil.WaitForBlocks(ctx, 1, terra))
+		}()
+	}
+
+	// Send store contract + instantiate txs for all users.
+	wg.Add(len(users))
+	for i := range users {
+		i := i
+		go func() {
+			defer wg.Done()
+			helpers.SetupContract(t, ctx, terra, users[i].KeyName(), "bytecode/counter.wasm", `{"count":0}`)
 			require.NoError(t, testutil.WaitForBlocks(ctx, 1, terra))
 		}()
 	}
