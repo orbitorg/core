@@ -68,7 +68,7 @@ func TestOracle(t *testing.T) {
 
 	// Fund for 50 users
 	fundChains := []ibc.Chain{}
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 50; i++ {
 		fundChains = append(fundChains, terra)
 	}
 	users := interchaintest.GetAndFundTestUsers(t, ctx, "default", genesisWalletAmount, fundChains...)
