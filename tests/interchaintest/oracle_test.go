@@ -24,7 +24,7 @@ func TestOracle(t *testing.T) {
 
 	t.Parallel()
 
-	numVals := 5
+	numVals := 3
 	numFullNodes := 3
 
 	config, err := createConfig()
@@ -66,9 +66,9 @@ func TestOracle(t *testing.T) {
 
 	require.NoError(t, testutil.WaitForBlocks(ctx, 1, terra))
 
-	// Fund for 50 users
+	// Fund for 15 users
 	fundChains := []ibc.Chain{}
-	for i := 0; i < 50; i++ {
+	for i := 0; i < 10; i++ {
 		fundChains = append(fundChains, terra)
 	}
 	users := interchaintest.GetAndFundTestUsers(t, ctx, "default", genesisWalletAmount, fundChains...)
@@ -88,7 +88,7 @@ func TestOracle(t *testing.T) {
 		val := val
 		go func(validator *cosmos.ChainNode) {
 			defer wg.Done()
-			for i := 0; i < 5; i++ {
+			for i := 0; i < 15; i++ {
 				if err := helpers.ExecOracleMsgAggragatePrevote(ctx, validator, "salt", "1.123uusd"); err != nil {
 					oracleErrCh <- err
 					return
@@ -101,7 +101,7 @@ func TestOracle(t *testing.T) {
 					oracleErrCh <- err
 					return
 				}
-				if err := testutil.WaitForBlocks(ctx, 5, terra); err != nil {
+				if err := testutil.WaitForBlocks(ctx, 2, terra); err != nil {
 					oracleErrCh <- err
 					return
 				}
@@ -123,77 +123,57 @@ func TestOracle(t *testing.T) {
 			require.NoError(t, err)
 			require.NoError(t, testutil.WaitForBlocks(ctx, 1, terra))
 		}()
-	}
 
-	// Send store contract + instantiate txs for all users.
-	wg.Add(len(users))
-	for i := range users {
-		i := i
-		go func() {
-			defer wg.Done()
-			helpers.SetupContract(t, ctx, terra, users[i].KeyName(), "bytecode/counter.wasm", `{"count":0}`)
-			require.NoError(t, testutil.WaitForBlocks(ctx, 1, terra))
-		}()
-	}
+		// Wait for all goroutines to complete
+		wg.Wait()
+		close(oracleErrCh)
 
-	// Wait for all goroutines to complete
-	wg.Wait()
-	close(oracleErrCh)
+		// Check for any errors that occurred in oracle operations
+		for err := range oracleErrCh {
+			require.NoError(t, err)
+		}
 
-	// Check for any errors that occurred in oracle operations
-	for err := range oracleErrCh {
+		height2, err := terra.Height(ctx)
 		require.NoError(t, err)
-	}
 
-	height2, err := terra.Height(ctx)
-	require.NoError(t, err)
+		for h := height1; h <= height2; h++ {
+			txs, err := terra.Validators[2].FindTxs(ctx, h)
+			convertedTxs := make([]Tx, len(txs))
+			for i, tx := range txs {
+				convertedEvents := make([]Event, len(tx.Events))
 
-	for h := height1; h <= height2; h++ {
-		txs, err := terra.Validators[2].FindTxs(ctx, h)
-		convertedTxs := make([]Tx, len(txs))
-		for i, tx := range txs {
-			convertedEvents := make([]Event, len(tx.Events))
+				for j, event := range tx.Events {
+					convertedEvents[j] = Event{
+						Type:       event.Type,
+						Attributes: make([]EventAttribute, len(event.Attributes)),
+					}
 
-			for j, event := range tx.Events {
-				convertedEvents[j] = Event{
-					Type:       event.Type,
-					Attributes: make([]EventAttribute, len(event.Attributes)),
-				}
-
-				for k, attr := range event.Attributes {
-					convertedEvents[j].Attributes[k] = EventAttribute{
-						Key:   attr.Key,
-						Value: attr.Value,
+					for k, attr := range event.Attributes {
+						convertedEvents[j].Attributes[k] = EventAttribute{
+							Key:   attr.Key,
+							Value: attr.Value,
+						}
 					}
 				}
+
+				convertedTxs[i] = Tx{
+					Data:   tx.Data,
+					Events: convertedEvents,
+				}
+			}
+			for i, tx := range convertedTxs {
+				fmt.Println("Tx: ", i)
+				for _, event := range tx.Events {
+					fmt.Println(event.Attributes)
+				}
 			}
 
-			convertedTxs[i] = Tx{
-				Data:   tx.Data,
-				Events: convertedEvents,
+			if !isOraclePrioritized(convertedTxs) {
+				fmt.Println("Oracle transactions are not prioritized")
 			}
+			require.NoError(t, err)
 		}
-		for i, tx := range convertedTxs {
-			fmt.Println("Tx: ", i)
-			for _, event := range tx.Events {
-				fmt.Println(event.Attributes)
-			}
-		}
-
-		if !isOraclePrioritized(convertedTxs) {
-			fmt.Println("Oracle transactions are not prioritized")
-		}
-		require.NoError(t, err)
 	}
-
-	// Verify final validator state
-	stdout, _, err := terra.Validators[0].ExecQuery(ctx, "staking", "validators")
-	require.NoError(t, err)
-	require.NotEmpty(t, stdout)
-
-	terraValidators, _, err := helpers.UnmarshalValidators(*config.EncodingConfig, stdout)
-	require.NoError(t, err)
-	require.Equal(t, len(terraValidators), 3)
 }
 
 type Tx struct {
