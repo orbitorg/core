@@ -101,7 +101,7 @@ func TestOracle(t *testing.T) {
 					oracleErrCh <- err
 					return
 				}
-				if err := testutil.WaitForBlocks(ctx, 2, terra); err != nil {
+				if err := testutil.WaitForBlocks(ctx, 5, terra); err != nil {
 					oracleErrCh <- err
 					return
 				}
