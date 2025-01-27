@@ -6,13 +6,12 @@ import (
 
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
+	oracletypes "github.com/classic-terra/core/v3/x/oracle/types"
+	customstaking "github.com/classic-terra/core/v3/x/staking"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
-	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-
-	oracletypes "github.com/classic-terra/core/v3/x/oracle/types"
 )
 
 // ExportAppStateAndValidators exports the state of the application for a genesis
@@ -37,7 +36,7 @@ func (app *TerraApp) ExportAppStateAndValidators(
 		return servertypes.ExportedApp{}, err
 	}
 
-	validators, err := staking.WriteValidators(ctx, app.StakingKeeper)
+	validators, err := customstaking.WriteValidators(ctx, app.StakingKeeper)
 	return servertypes.ExportedApp{
 		AppState:        appState,
 		Validators:      validators,

@@ -50,7 +50,7 @@ func (s *StakingTestSuite) TestValidatorVPLimit() {
 	}
 
 	for i := range validators {
-		validators[i] = stakingkeeper.TestingUpdateValidator(s.App.StakingKeeper, s.Ctx, validators[i], true)
+		validators[i] = stakingkeeper.TestingUpdateValidator(&s.App.StakingKeeper.Keeper, s.Ctx, validators[i], true)
 	}
 
 	// delegate to a validator over 20% VP

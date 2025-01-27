@@ -2,6 +2,7 @@ package ante
 
 import (
 	errorsmod "cosmossdk.io/errors"
+	customstakingkeeper "github.com/classic-terra/core/v3/x/staking/keeper"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -13,7 +14,6 @@ import (
 	dyncommante "github.com/classic-terra/core/v3/x/dyncomm/ante"
 	dyncommkeeper "github.com/classic-terra/core/v3/x/dyncomm/keeper"
 	"github.com/cosmos/cosmos-sdk/codec"
-	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	ibcante "github.com/cosmos/ibc-go/v7/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 
@@ -41,7 +41,7 @@ type HandlerOptions struct {
 	WasmConfig             *wasmtypes.WasmConfig
 	TXCounterStoreKey      storetypes.StoreKey
 	DyncommKeeper          dyncommkeeper.Keeper
-	StakingKeeper          *stakingkeeper.Keeper
+	StakingKeeper          *customstakingkeeper.Keeper
 	TaxKeeper              *taxkeeper.Keeper
 	Cdc                    codec.BinaryCodec
 }
