@@ -90,8 +90,11 @@ run_fork () {
 run_upgrade () {
     echo "upgrading"
 
-    STATUS_INFO=($(./_build/old/terrad status --home $HOME | jq -r '.NodeInfo.network,.SyncInfo.latest_block_height'))
-    UPGRADE_HEIGHT=$((STATUS_INFO[1] + 20))
+    STATUS_INFO=($(./_build/old/terrad status --home $HOME | jq -r '.SyncInfo.latest_block_height'))
+    echo "status info:" $STATUS_INFO
+    UPGRADE_HEIGHT=$((STATUS_INFO + 20))
+
+    echo "upgrade height:" $UPGRADE_HEIGHT
 
     tar -cf ./_build/new/terrad.tar -C ./_build/new terrad
     SUM=$(shasum -a 256 ./_build/new/terrad.tar | cut -d ' ' -f1)
