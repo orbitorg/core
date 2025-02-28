@@ -90,4 +90,8 @@ done
 
 TXHASH_STRING="${TXHASH[*]}"
 echo "TXHASH = $TXHASH_STRING"
+# write the contract state to a file
+echo "Writing contract state to file"
+mkdir -p scripts/wasm/contract_states/
+$BINARY q wasm contract-state all $contract_addr --output json --home $HOME > scripts/wasm/contract_states/old_cw721_base.json
 export TXHASH_STRING
