@@ -16,7 +16,7 @@ ADDITIONAL_AFTER_SCRIPTS=${ADDITIONAL_AFTER_SCRIPTS:-""}
 GAS_PRICE=${GAS_PRICE:-"30uluna"}
 
 if [[ "$FORK" == "true" ]]; then
-    export TERRAD_HALT_HEIGHT=20
+    export TERRAD_HALT_HEIGHT=100
 fi
 
 # underscore so that go tool will not take gocache into account
@@ -134,7 +134,7 @@ run_upgrade () {
         else
             ./_build/old/terrad q gov proposal 1 --output=json | jq ".status"
             echo "BLOCK_HEIGHT = $BLOCK_HEIGHT"
-            sleep 10
+            sleep 5
         fi
     done
 }

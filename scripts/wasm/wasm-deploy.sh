@@ -1,12 +1,14 @@
 #!/bin/sh
 
 BINARY=_build/old/terrad
-CONTRACTPATH="scripts/wasm/contracts/cw721_base.wasm"
+WASMFILE="cw721_base.wasm"
+CONTRACTPATH="scripts/wasm/contracts/$WASMFILE"
 KEYRING_BACKEND="test"
 HOME=mytestnet
 CHAIN_ID=localterra
 
 TXHASH=()
+CONTRACT_ADDRESSES=()
 
 echo "SETTING UP SMART CONTRACT INTERACTION"
 
@@ -44,6 +46,7 @@ for j in $(seq 0 1); do
 	txhash=$(echo $out | jq -r '.txhash')
 	TXHASH+=("$txhash")
 	contract_addr=$($BINARY q tx $txhash -o json | jq -r '.raw_log' | jq -r '.[0].events[1].attributes[0].value')
+	CONTRACT_ADDRESSES+=("$contract_addr")
 	echo $($BINARY q tx $txhash -o json | jq -r '.raw_log')
 	echo "contract_addr = $contract_addr"
 
@@ -86,12 +89,19 @@ for j in $(seq 0 1); do
 		sleep 10
 	done
 
+		# write the contract state to a file
+	echo "Writing contract state to file"
+	mkdir -p scripts/wasm/contract_states/
+	$BINARY q wasm contract-state all $contract_addr --output json --home $HOME > scripts/wasm/contract_states/old_$contract_addr.json
+
+
 done
 
 TXHASH_STRING="${TXHASH[*]}"
+CONTRACT_ADDRESSES_STRING="${CONTRACT_ADDRESSES[*]}"
+
 echo "TXHASH = $TXHASH_STRING"
-# write the contract state to a file
-echo "Writing contract state to file"
-mkdir -p scripts/wasm/contract_states/
-$BINARY q wasm contract-state all $contract_addr --output json --home $HOME > scripts/wasm/contract_states/old_cw721_base.json
+echo "CONTRACT_ADDRESSES = $CONTRACT_ADDRESSES_STRING"
+
 export TXHASH_STRING
+export CONTRACT_ADDRESSES_STRING
