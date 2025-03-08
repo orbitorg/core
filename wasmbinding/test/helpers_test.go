@@ -38,6 +38,10 @@ func (s *WasmTestSuite) InstantiateContract(addr sdk.AccAddress, contractPath st
 	info := wasmKeeper.GetContractInfo(s.Ctx, contractAddr)
 	s.Require().NotNil(info)
 
+	// Check that the contract info is correct
+	s.Require().Equal(codeID, info.CodeID)
+	s.Require().True(wasmKeeper.HasContractInfo(s.Ctx, contractAddr))
+
 	return contractAddr
 }
 

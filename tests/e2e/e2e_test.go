@@ -267,3 +267,42 @@ func (s *IntegrationTestSuite) TestFeeTaxWasm() {
 	// no longer taxed
 	s.Require().Equal(balance3.Amount, balance2.Amount.Sub(transferAmount))
 }
+
+func (s *IntegrationTestSuite) TestWasmContract() {
+	chain := s.configurer.GetChainConfig(0)
+	node, err := chain.GetDefaultNode()
+	s.Require().NoError(err)
+
+	testAddr := node.CreateWallet("test")
+	transferAmount := sdkmath.NewInt(100000000)
+	transferCoin := sdk.NewCoin(initialization.TerraDenom, transferAmount)
+	node.BankSend(fmt.Sprintf("%suluna", transferAmount.Mul(sdk.NewInt(4))), initialization.ValidatorWalletName, testAddr)
+	node.StoreWasmCode("counter.wasm", initialization.ValidatorWalletName)
+	chain.LatestCodeID = int(node.QueryLatestWasmCodeID())
+	// instantiate contract and transfer 100000000uluna
+	node.InstantiateWasmContract(
+		strconv.Itoa(chain.LatestCodeID),
+		`{"count": "0"}`,
+		transferCoin.String(),
+		"test",
+	)
+
+	contracts, err := node.QueryContractsFromID(chain.LatestCodeID)
+	s.Require().NoError(err)
+	s.Require().Len(contracts, 1, "Wrong number of contracts for the counter")
+
+	stabilityFee := sdk.NewDecWithPrec(2, 2).MulInt(transferAmount)
+
+	node.Instantiate2WasmContract(
+		strconv.Itoa(chain.LatestCodeID),
+		`{"count": "0"}`, "salt",
+		transferCoin.String(),
+		fmt.Sprintf("%duluna", stabilityFee), "300000", "test")
+
+	contracts, err = node.QueryContractsFromID(chain.LatestCodeID)
+	s.Require().NoError(err)
+	s.Require().Len(contracts, 2, "Wrong number of contracts for the counter")
+
+	contractAddr := contracts[0]
+	node.WasmExecute(contractAddr, `{"donate": {}}`, transferCoin.String(), fmt.Sprintf("%duluna", stabilityFee), "test")
+}
