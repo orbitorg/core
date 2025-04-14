@@ -13,9 +13,7 @@ get_cw20_token_balance() {
     local address=$1
     local token_contract=$2
     local query="{\"balance\":{\"address\":\"$address\"}}"
-    >&2 echo "Query: $query"
     local balance=$($BINARY query wasm contract-state smart $token_contract "$query" --output json | jq -r '.data.balance')
-    >&2 echo "Balance: $balance"
     printf "%s" "${balance:-0}"  # Return 0 if balance is null/empty
 }
 
@@ -38,7 +36,6 @@ get_address_from_key() {
     local key=$1
     
     # log the query 
-    >&2 echo "Query: $BINARY keys show $key --output json --keyring-backend $KEYRING --home $HOME"
     local address=$($BINARY keys show $key --output json --keyring-backend $KEYRING --home $HOME | jq -r '.address')
     printf "%s" "$address"
 }
