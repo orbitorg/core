@@ -11,7 +11,7 @@ ROOT=$(pwd)
 DENOM=uluna
 CHAIN_ID=localterra
 SOFTWARE_UPGRADE_NAME="v12"
-ADDITIONAL_PRE_SCRIPTS=${ADDITIONAL_PRE_SCRIPTS:-"scripts/wasm/dex/fixture.sh"}
+ADDITIONAL_PRE_SCRIPTS=${ADDITIONAL_PRE_SCRIPTS:-"scripts/wasm/dex/pre-dex.sh"}
 ADDITIONAL_AFTER_SCRIPTS=${ADDITIONAL_AFTER_SCRIPTS:-""}
 GAS_PRICE=${GAS_PRICE:-"30uluna"}
 
@@ -53,7 +53,7 @@ else
     screen -L -Logfile $HOME/log-screen.txt -dmS node1 bash scripts/run-node.sh _build/old/terrad $DENOM
 fi
 
-sleep 5
+sleep 2
 
 # execute additional pre scripts
 if [ ! -z "$ADDITIONAL_PRE_SCRIPTS" ]; then
@@ -70,6 +70,8 @@ if [ ! -z "$ADDITIONAL_PRE_SCRIPTS" ]; then
         fi
     done
 fi
+
+exit 0
 
 run_fork () {
     echo "forking"
@@ -157,7 +159,7 @@ else
     CONTINUE="true" screen -L -Logfile $HOME/log-screen.txt -dmS node1 bash scripts/run-node.sh _build/new/terrad $DENOM
 fi
 
-sleep 20
+sleep 3
 
 # execute additional after scripts
 if [ ! -z "$ADDITIONAL_AFTER_SCRIPTS" ]; then
