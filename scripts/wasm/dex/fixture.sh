@@ -1,7 +1,7 @@
 #!/bin/bash
 source scripts/wasm/env-test-pre.sh
 source scripts/wasm/helpers.sh
-
+source scripts/wasm/utils.sh
 # Configuration
 FACTORY_CONTRACT_PATH="scripts/wasm/dex/artifacts/terraswap_factory.wasm"
 PAIR_CONTRACT_PATH="scripts/wasm/dex/artifacts/terraswap_pair.wasm"
@@ -47,17 +47,18 @@ echo "TOKEN_CODE_ID: $TOKEN_CODE_ID"
 
 # Create token instantiation message
 echo "Instantiating token contract..."
+test0Wallet=$(get_address_from_key $KEY)
 TOKEN_MSG=$(cat << EOF
 {
     "name": "$TOKEN_NAME",
     "symbol": "$TOKEN_SYMBOL",
     "decimals": $TOKEN_DECIMALS,
     "initial_balances": [{
-        "address": "$TREASURY",
+        "address": "$test0Wallet",
         "amount": "1000000000000000"
     }],
     "mint": {
-        "minter": "$TREASURY",
+        "minter": "$test0Wallet",
         "cap": "1000000000000000"
     },
     "marketing": null

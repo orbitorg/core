@@ -37,8 +37,6 @@ create_pair() {
     fi
 
     >&2 echo "Creating pair for tokens:"
-    >&2 echo "Token 1: $token1"
-    >&2 echo "Token 2: $token2"
 
     # Create asset JSON
     local asset1=$(create_asset_json "$token1")
@@ -103,13 +101,15 @@ increase_allowance() {
         --from "$KEY" \
         --chain-id "$CHAIN_ID" \
         --gas 20000000 \
-        --fees 1124975000uluna \
+        --fees 11124975000uluna \
         --keyring-backend "$KEYRING" \
         --home "$HOME" \
         --output json \
         -y)
-      
     
+    txhash=$(echo $out | jq -r '.txhash')
+    sleep $SLEEP_TIME
+    tx_response=$($BINARY q tx $txhash --output json)
     sleep $SLEEP_TIME
 }
 
@@ -122,12 +122,9 @@ provide_liquidity() {
     local amount2=$5
 
     >&2 echo "Providing liquidity..."
-    >&2 echo "Token 1: $token1 Amount: $amount1"
-    >&2 echo "Token 2: $token2 Amount: $amount2"
 
     # Query pair address
     local pair_address=$(query_pair_address "$factory_address" "$token1" "$token2")
-    >&2 echo "Pair contract address: $pair_address"
 
     # Prepare assets
     local asset1=$(create_asset_json "$token1" "$amount1")
@@ -144,10 +141,10 @@ provide_liquidity() {
     # Prepare native token funds if needed
     local funds=""
     if [[ $token1 != terra* ]]; then
-        funds="$funds--amount $amount1 "
+        funds="$funds--amount $amount1$token1 "
     fi
     if [[ $token2 != terra* ]]; then
-        funds="$funds--amount $amount2 "
+        funds="$funds--amount $amount2$token2 "
     fi
 
 
@@ -179,3 +176,95 @@ EOF
     sleep $SLEEP_TIME
     tx_response=$($BINARY q tx $txhash --output json)
 }
+
+# Function to create base64 encoded message
+create_base64_msg() {
+    local msg=$1
+    echo "$msg" | base64
+}
+
+# Function to execute swap
+execute_swap() {
+    local router_address=$1
+    local token1=$2      # offer token
+    local amount=$3      # offer amount
+    local token2=$4      # ask token
+    local min_receive=${5:-"0"}
+    local deadline=${6:-$(($(date +%s) + 120))}  # Default 2 minutes from now
+
+    # Create asset infos for the swap operation
+    local offer_asset_info=$(create_asset_info_json "$token1")
+    local ask_asset_info=$(create_asset_info_json "$token2")
+
+    # Create the swap operation message
+    local swap_msg=$(cat << EOF
+{
+  "execute_swap_operations": {
+    "operations": [
+      {
+        "terra_swap": {
+          "offer_asset_info": $offer_asset_info,
+          "ask_asset_info": $ask_asset_info
+        }
+      }
+    ],
+    "minimum_receive": "$min_receive",
+    "deadline": $deadline
+  }
+}
+EOF
+)
+
+    # >&2 echo "Swap Message: $swap_msg"
+
+    # Handle CW20 tokens
+    if [[ $token1 == terra* ]]; then
+        >&2 echo "Sending CW20 tokens to router..."
+        local send_msg=$(cat << EOF
+{
+  "send": {
+    "contract": "$router_address",
+    "amount": "$amount",
+    "msg": "$(create_base64_msg "$swap_msg")"
+  }
+}
+EOF
+)
+        out=$($BINARY tx wasm execute "$token1" "$send_msg" \
+            --from "$KEY" \
+            --chain-id "$CHAIN_ID" \
+            --gas 20000000 \
+            --fees 1124975000uluna \
+            --keyring-backend "$KEYRING" \
+            --home "$HOME" \
+            --output json \
+            -y)
+
+        >&2 echo "out: $out"
+    else
+        # Execute swap directly through router for native tokens
+        >&2 echo "Executing swap through router..."
+        local funds="--amount $amount$token1"
+        
+        out=$($BINARY tx wasm execute "$router_address" "$swap_msg" \
+            --from "$KEY" \
+            --chain-id "$CHAIN_ID" \
+            --gas 20000000 \
+            --fees 1124975000uluna \
+            $funds \
+            --keyring-backend "$KEYRING" \
+            --home "$HOME" \
+            --output json \
+            -y)
+
+        >&2 echo "out: $out"
+    fi
+
+    sleep $SLEEP_TIME
+    txhash=$(echo $out | jq -r '.txhash')
+    
+    # Query the tx and extract swap amount
+    sleep $SLEEP_TIME
+    tx_response=$($BINARY q tx $txhash --output json)
+}
+
