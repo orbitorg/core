@@ -240,7 +240,6 @@ EOF
             --output json \
             -y)
 
-        >&2 echo "out: $out"
     else
         # Execute swap directly through router for native tokens
         >&2 echo "Executing swap through router..."
@@ -257,7 +256,6 @@ EOF
             --output json \
             -y)
 
-        >&2 echo "out: $out"
     fi
 
     sleep $SLEEP_TIME

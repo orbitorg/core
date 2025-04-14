@@ -11,8 +11,8 @@ ROOT=$(pwd)
 DENOM=uluna
 CHAIN_ID=localterra
 SOFTWARE_UPGRADE_NAME="v12"
-# ADDITIONAL_PRE_SCRIPTS=${ADDITIONAL_PRE_SCRIPTS:-"scripts/wasm/dex/pre-dex.sh"}
-ADDITIONAL_PRE_SCRIPTS=${ADDITIONAL_PRE_SCRIPTS:-""}
+ADDITIONAL_PRE_SCRIPTS=${ADDITIONAL_PRE_SCRIPTS:-"scripts/wasm/dex/pre-dex.sh"}
+# ADDITIONAL_PRE_SCRIPTS=${ADDITIONAL_PRE_SCRIPTS:-""}
 ADDITIONAL_AFTER_SCRIPTS=${ADDITIONAL_AFTER_SCRIPTS:-"scripts/wasm/dex/post-dex.sh"}
 GAS_PRICE=${GAS_PRICE:-"30uluna"}
 
@@ -94,7 +94,7 @@ run_upgrade () {
 
     STATUS_INFO=($(./_build/old/terrad status --home $HOME | jq -r '.SyncInfo.latest_block_height'))
     echo "status info:" $STATUS_INFO
-    UPGRADE_HEIGHT=$((STATUS_INFO + 10))
+    UPGRADE_HEIGHT=$((STATUS_INFO + 20))
 
     echo "upgrade height:" $UPGRADE_HEIGHT
 

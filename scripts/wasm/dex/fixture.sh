@@ -98,29 +98,6 @@ EOF
 ROUTER_CONTRACT_ADDRESS=$(instantiate_contract "$ROUTER_CONTRACT_PATH" "$ROUTER_CODE_ID" "$ROUTER_MSG" "LUNC Terraswap Router")
 echo "Router contract address: $ROUTER_CONTRACT_ADDRESS"
 
-# Save all contract addresses and code IDs
-cat > scripts/wasm/dex/deployment_info.txt << EOL
-TOKEN_CODE_ID=$TOKEN_CODE_ID
-PAIR_CODE_ID=$PAIR_CODE_ID
-FACTORY_CODE_ID=$FACTORY_CODE_ID
-ROUTER_CODE_ID=$ROUTER_CODE_ID
-TOKEN_CONTRACT_ADDRESS=$TOKEN_CONTRACT_ADDRESS
-FACTORY_CONTRACT_ADDRESS=$FACTORY_CONTRACT_ADDRESS
-ROUTER_CONTRACT_ADDRESS=$ROUTER_CONTRACT_ADDRESS
-EOL
-
-echo "----------------------------------------"
-echo "Deployment Summary:"
-echo "Token Code ID: $TOKEN_CODE_ID"
-echo "Token Address: $TOKEN_CONTRACT_ADDRESS"
-echo "Factory Code ID: $FACTORY_CODE_ID"
-echo "Factory Address: $FACTORY_CONTRACT_ADDRESS"
-echo "Router Code ID: $ROUTER_CODE_ID"
-echo "Router Address: $ROUTER_CONTRACT_ADDRESS"
-echo "----------------------------------------"
-echo "All information has been saved to scripts/wasm/dex/deployment_info.txt"
-
-
 echo "----------------------------------------"
 echo "Setting up the config"
 echo "CONFIG: Adding the native token decimals"
@@ -139,3 +116,18 @@ out=$($BINARY tx wasm execute $FACTORY_CONTRACT_ADDRESS \
     --home $HOME \
     --output json \
     -y)
+
+# Save deployment info as shell script with exports
+cat > scripts/wasm/dex/deployment_info.sh << EOL
+#!/bin/bash
+export TOKEN_CODE_ID="$TOKEN_CODE_ID"
+export PAIR_CODE_ID="$PAIR_CODE_ID"
+export FACTORY_CODE_ID="$FACTORY_CODE_ID"
+export ROUTER_CODE_ID="$ROUTER_CODE_ID"
+export TOKEN_ADDRESS="$TOKEN_CONTRACT_ADDRESS"
+export FACTORY_ADDRESS="$FACTORY_CONTRACT_ADDRESS"
+export ROUTER_ADDRESS="$ROUTER_CONTRACT_ADDRESS"
+EOL
+
+# Make it executable
+chmod +x scripts/wasm/dex/deployment_info.sh
