@@ -2,7 +2,6 @@
 
 source scripts/wasm/env-test-pre.sh
 
-# Create asset info JSON (without amount)
 create_asset_info_json() {
     local input=$1
     if [[ $input == terra* ]]; then
@@ -12,10 +11,9 @@ create_asset_info_json() {
     fi
 }
 
-# Create full asset JSON with amount
 create_asset_json() {
     local input=$1
-    local amount=${2:-"0"} # Default amount to "0" if not provided
+    local amount=${2:-"0"}
     if [[ $input == terra* ]]; then
         echo "{\"info\":{\"token\":{\"contract_addr\":\"$input\"}},\"amount\":\"$amount\"}"
     else
@@ -23,7 +21,6 @@ create_asset_json() {
     fi
 }
 
-# Function to create a pair
 create_pair() {
     sleep $SLEEP_TIME 
 
@@ -38,14 +35,12 @@ create_pair() {
 
     >&2 echo "Creating pair for tokens:"
 
-    # Create asset JSON
     local asset1=$(create_asset_json "$token1")
     local asset2=$(create_asset_json "$token2")
     
     >&2 echo "Asset 1: $asset1"
     >&2 echo "Asset 2: $asset2"
 
-    # Create pair message
     local msg=$(cat << EOF
 {
     "create_pair": {
@@ -55,7 +50,6 @@ create_pair() {
 EOF
 )
 
-    # Execute create pair
     >&2 echo "Creating pair..."
     out=$($BINARY tx wasm execute "$factory_address" "$msg" \
         --from "$KEY" \
@@ -70,7 +64,6 @@ EOF
     sleep $SLEEP_TIME
     txhash=$(echo $out | jq -r '.txhash')
     
-    # Query the tx and extract pair address
     sleep $SLEEP_TIME
     tx_response=$($BINARY q tx $txhash --output json)
     pair_address=$(echo "$tx_response" | jq -r '.logs[0].events[] | select(.type=="wasm").attributes[] | select(.key=="pair_contract_addr").value')
@@ -78,7 +71,6 @@ EOF
     printf "%s" "$pair_address"
 }
 
-# Function to query pair address from factory
 query_pair_address() {
     local factory_address=$1
     local token1=$2
@@ -89,7 +81,6 @@ query_pair_address() {
     echo $(echo $pair_info | jq -r '.data.contract_addr')
 }
 
-# Function to increase allowance for CW20 tokens
 increase_allowance() {
     local token_address=$1
     local spender=$2
@@ -113,7 +104,6 @@ increase_allowance() {
     sleep $SLEEP_TIME
 }
 
-# Function to provide liquidity
 provide_liquidity() {
     local factory_address=$1
     local token1=$2
@@ -123,14 +113,11 @@ provide_liquidity() {
 
     >&2 echo "Providing liquidity..."
 
-    # Query pair address
     local pair_address=$(query_pair_address "$factory_address" "$token1" "$token2")
 
-    # Prepare assets
     local asset1=$(create_asset_json "$token1" "$amount1")
     local asset2=$(create_asset_json "$token2" "$amount2")
 
-    # Handle CW20 tokens allowances
     if [[ $token1 == terra* ]]; then
         increase_allowance "$token1" "$pair_address" "$amount1"
     fi
@@ -138,7 +125,6 @@ provide_liquidity() {
         increase_allowance "$token2" "$pair_address" "$amount2"
     fi
 
-    # Prepare native token funds if needed
     local funds=""
     if [[ $token1 != terra* ]]; then
         funds="$funds--amount $amount1$token1 "
@@ -147,8 +133,6 @@ provide_liquidity() {
         funds="$funds--amount $amount2$token2 "
     fi
 
-
-    # Execute provide liquidity
     local msg=$(cat << EOF
 {
     "provide_liquidity": {
@@ -172,31 +156,26 @@ EOF
     sleep $SLEEP_TIME
     txhash=$(echo $out | jq -r '.txhash')
     
-    # Query the tx and extract LP token amount
     sleep $SLEEP_TIME
     tx_response=$($BINARY q tx $txhash --output json)
 }
 
-# Function to create base64 encoded message
 create_base64_msg() {
     local msg=$1
     echo "$msg" | base64
 }
 
-# Function to execute swap
 execute_swap() {
     local router_address=$1
-    local token1=$2      # offer token
-    local amount=$3      # offer amount
-    local token2=$4      # ask token
+    local token1=$2
+    local amount=$3
+    local token2=$4
     local min_receive=${5:-"0"}
-    local deadline=${6:-$(($(date +%s) + 120))}  # Default 2 minutes from now
+    local deadline=${6:-$(($(date +%s) + 120))}
 
-    # Create asset infos for the swap operation
     local offer_asset_info=$(create_asset_info_json "$token1")
     local ask_asset_info=$(create_asset_info_json "$token2")
 
-    # Create the swap operation message
     local swap_msg=$(cat << EOF
 {
   "execute_swap_operations": {
@@ -215,9 +194,6 @@ execute_swap() {
 EOF
 )
 
-    # >&2 echo "Swap Message: $swap_msg"
-
-    # Handle CW20 tokens
     if [[ $token1 == terra* ]]; then
         >&2 echo "Sending CW20 tokens to router..."
         local send_msg=$(cat << EOF
@@ -241,7 +217,6 @@ EOF
             -y)
 
     else
-        # Execute swap directly through router for native tokens
         >&2 echo "Executing swap through router..."
         local funds="--amount $amount$token1"
         
@@ -255,13 +230,11 @@ EOF
             --home "$HOME" \
             --output json \
             -y)
-
     fi
 
     sleep $SLEEP_TIME
     txhash=$(echo $out | jq -r '.txhash')
     
-    # Query the tx and extract swap amount
     sleep $SLEEP_TIME
     tx_response=$($BINARY q tx $txhash --output json)
 }
