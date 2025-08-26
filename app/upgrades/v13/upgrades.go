@@ -494,7 +494,7 @@ func collectContractAddresses(store sdk.KVStore) [][]byte {
 	for ; contractInfoIter.Valid(); contractInfoIter.Next() {
 		// The key is the contract address (potentially with length prefix)
 		addr := contractInfoIter.Key()
-		
+
 		// Only collect entries that look like contract addresses
 		// Valid forms:
 		// - 20-byte raw address

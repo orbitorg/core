@@ -21,6 +21,7 @@ import (
 )
 
 type MigrationCorruptionTestSuite struct {
+	suite.Suite
 	apptesting.KeeperTestHelper
 }
 

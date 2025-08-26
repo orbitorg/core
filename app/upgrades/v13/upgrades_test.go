@@ -23,6 +23,7 @@ import (
 )
 
 type UpgradeTestSuite struct {
+	suite.Suite
 	apptesting.KeeperTestHelper
 }
 

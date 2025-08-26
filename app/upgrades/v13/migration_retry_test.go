@@ -21,6 +21,7 @@ import (
 )
 
 type MigrationRetryTestSuite struct {
+	suite.Suite
 	apptesting.KeeperTestHelper
 }
 

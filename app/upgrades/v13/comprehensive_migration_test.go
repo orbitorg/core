@@ -21,6 +21,7 @@ import (
 )
 
 type ComprehensiveMigrationTestSuite struct {
+	suite.Suite
 	apptesting.KeeperTestHelper
 }
 

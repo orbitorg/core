@@ -19,6 +19,7 @@ import (
 )
 
 type UnsafePrefixTestSuite struct {
+	suite.Suite
 	apptesting.KeeperTestHelper
 }
 
