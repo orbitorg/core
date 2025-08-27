@@ -31,7 +31,9 @@ func RemoveLengthPrefixIfNeeded(bz []byte) []byte {
 func ReadContractHistoryWithFallback(store sdk.KVStore, contractAddr sdk.AccAddress) ([]byte, bool) {
 	// First try to read from the new prefix (0x05) - migrated data
 	newPrefix := []byte{0x05}
-	newKey := append(newPrefix, contractAddr...)
+	newKey := make([]byte, 0, len(newPrefix)+len(contractAddr))
+	newKey = append(newKey, newPrefix...)
+	newKey = append(newKey, contractAddr...)
 	value := store.Get(newKey)
 
 	if value != nil {
@@ -43,7 +45,9 @@ func ReadContractHistoryWithFallback(store sdk.KVStore, contractAddr sdk.AccAddr
 
 	// Handle potential length-prefixed addresses in old data
 	// Try with original address first
-	oldKey := append(oldPrefix, contractAddr...)
+	oldKey := make([]byte, 0, len(oldPrefix)+len(contractAddr))
+	oldKey = append(oldKey, oldPrefix...)
+	oldKey = append(oldKey, contractAddr...)
 	value = store.Get(oldKey)
 
 	if value != nil {
@@ -51,8 +55,13 @@ func ReadContractHistoryWithFallback(store sdk.KVStore, contractAddr sdk.AccAddr
 	}
 
 	// Also try with length-prefixed address for old data
-	lengthPrefixedAddr := append([]byte{byte(len(contractAddr))}, contractAddr...)
-	oldKeyWithPrefix := append(oldPrefix, lengthPrefixedAddr...)
+	lengthPrefixedAddr := make([]byte, 0, 1+len(contractAddr))
+	lengthPrefixedAddr = append(lengthPrefixedAddr, byte(len(contractAddr)))
+	lengthPrefixedAddr = append(lengthPrefixedAddr, contractAddr...)
+
+	oldKeyWithPrefix := make([]byte, 0, len(oldPrefix)+len(lengthPrefixedAddr))
+	oldKeyWithPrefix = append(oldKeyWithPrefix, oldPrefix...)
+	oldKeyWithPrefix = append(oldKeyWithPrefix, lengthPrefixedAddr...)
 	value = store.Get(oldKeyWithPrefix)
 
 	if value != nil {
@@ -115,21 +124,30 @@ func IterateContractHistoryWithFallback(store sdk.KVStore, cb func(contractAddr 
 func ReadContractInfoWithFallback(store sdk.KVStore, contractAddr sdk.AccAddress) ([]byte, bool) {
 	// New prefix for contract info after migration: 0x02
 	newPrefix := []byte{0x02}
-	newKey := append(newPrefix, contractAddr...)
+	newKey := make([]byte, 0, len(newPrefix)+len(contractAddr))
+	newKey = append(newKey, newPrefix...)
+	newKey = append(newKey, contractAddr...)
 	if v := store.Get(newKey); v != nil {
 		return v, true
 	}
 
 	// Old prefix before migration: 0x04 (may include length-prefixed address)
 	oldPrefix := []byte{0x04}
-	oldKey := append(oldPrefix, contractAddr...)
+	oldKey := make([]byte, 0, len(oldPrefix)+len(contractAddr))
+	oldKey = append(oldKey, oldPrefix...)
+	oldKey = append(oldKey, contractAddr...)
 	if v := store.Get(oldKey); v != nil {
 		return v, true
 	}
 
 	// Try length-prefixed variant
-	lengthPrefixedAddr := append([]byte{byte(len(contractAddr))}, contractAddr...)
-	oldKeyWithPrefix := append(oldPrefix, lengthPrefixedAddr...)
+	lengthPrefixedAddr := make([]byte, 0, 1+len(contractAddr))
+	lengthPrefixedAddr = append(lengthPrefixedAddr, byte(len(contractAddr)))
+	lengthPrefixedAddr = append(lengthPrefixedAddr, contractAddr...)
+
+	oldKeyWithPrefix := make([]byte, 0, len(oldPrefix)+len(lengthPrefixedAddr))
+	oldKeyWithPrefix = append(oldKeyWithPrefix, oldPrefix...)
+	oldKeyWithPrefix = append(oldKeyWithPrefix, lengthPrefixedAddr...)
 	if v := store.Get(oldKeyWithPrefix); v != nil {
 		return v, true
 	}
@@ -141,7 +159,9 @@ func ReadContractInfoWithFallback(store sdk.KVStore, contractAddr sdk.AccAddress
 func ReadRawContractStateWithFallback(store sdk.KVStore, contractAddr []byte, key []byte) ([]byte, bool) {
 	// New: 0x03 | addr | key
 	newPrefix := []byte{0x03}
-	newKey := append(append([]byte{}, newPrefix...), contractAddr...)
+	newKey := make([]byte, 0, len(newPrefix)+len(contractAddr)+len(key))
+	newKey = append(newKey, newPrefix...)
+	newKey = append(newKey, contractAddr...)
 	newKey = append(newKey, key...)
 	if v := store.Get(newKey); v != nil {
 		return v, true
@@ -149,15 +169,22 @@ func ReadRawContractStateWithFallback(store sdk.KVStore, contractAddr []byte, ke
 
 	// Old: 0x05 | addr | key
 	oldPrefix := []byte{0x05}
-	oldKey := append(append([]byte{}, oldPrefix...), contractAddr...)
+	oldKey := make([]byte, 0, len(oldPrefix)+len(contractAddr)+len(key))
+	oldKey = append(oldKey, oldPrefix...)
+	oldKey = append(oldKey, contractAddr...)
 	oldKey = append(oldKey, key...)
 	if v := store.Get(oldKey); v != nil {
 		return v, true
 	}
 
 	// Old with length-prefixed address
-	lengthPrefixedAddr := append([]byte{byte(len(contractAddr))}, contractAddr...)
-	oldKeyWithPrefix := append(append([]byte{}, oldPrefix...), lengthPrefixedAddr...)
+	lengthPrefixedAddr := make([]byte, 0, 1+len(contractAddr))
+	lengthPrefixedAddr = append(lengthPrefixedAddr, byte(len(contractAddr)))
+	lengthPrefixedAddr = append(lengthPrefixedAddr, contractAddr...)
+
+	oldKeyWithPrefix := make([]byte, 0, len(oldPrefix)+len(lengthPrefixedAddr)+len(key))
+	oldKeyWithPrefix = append(oldKeyWithPrefix, oldPrefix...)
+	oldKeyWithPrefix = append(oldKeyWithPrefix, lengthPrefixedAddr...)
 	oldKeyWithPrefix = append(oldKeyWithPrefix, key...)
 	if v := store.Get(oldKeyWithPrefix); v != nil {
 		return v, true
@@ -171,7 +198,10 @@ func IterateAllContractStateWithFallback(store sdk.KVStore, contractAddr []byte,
 	visited := make(map[string]bool)
 
 	// New prefix first: 0x03 | addr | ...
-	newContractPrefix := append([]byte{0x03}, contractAddr...)
+	newContractPrefix := make([]byte, 0, 1+len(contractAddr))
+	newContractPrefix = append(newContractPrefix, 0x03)
+	newContractPrefix = append(newContractPrefix, contractAddr...)
+
 	newStore := prefix.NewStore(store, newContractPrefix)
 	newIter := newStore.Iterator(nil, nil)
 	defer newIter.Close()
@@ -185,7 +215,10 @@ func IterateAllContractStateWithFallback(store sdk.KVStore, contractAddr []byte,
 	}
 
 	// Old prefix without length prefix: 0x05 | addr | ...
-	oldContractPrefix := append([]byte{0x05}, contractAddr...)
+	oldContractPrefix := make([]byte, 0, 1+len(contractAddr))
+	oldContractPrefix = append(oldContractPrefix, 0x05)
+	oldContractPrefix = append(oldContractPrefix, contractAddr...)
+
 	oldStore := prefix.NewStore(store, oldContractPrefix)
 	oldIter := oldStore.Iterator(nil, nil)
 	for ; oldIter.Valid(); oldIter.Next() {
@@ -202,8 +235,14 @@ func IterateAllContractStateWithFallback(store sdk.KVStore, contractAddr []byte,
 	oldIter.Close()
 
 	// Old prefix with length-prefixed address: 0x05 | [len]|addr | ...
-	lengthPrefixedAddr := append([]byte{byte(len(contractAddr))}, contractAddr...)
-	oldPrefixedContractPrefix := append([]byte{0x05}, lengthPrefixedAddr...)
+	lengthPrefixedAddr := make([]byte, 0, 1+len(contractAddr))
+	lengthPrefixedAddr = append(lengthPrefixedAddr, byte(len(contractAddr)))
+	lengthPrefixedAddr = append(lengthPrefixedAddr, contractAddr...)
+
+	oldPrefixedContractPrefix := make([]byte, 0, 1+len(lengthPrefixedAddr))
+	oldPrefixedContractPrefix = append(oldPrefixedContractPrefix, 0x05)
+	oldPrefixedContractPrefix = append(oldPrefixedContractPrefix, lengthPrefixedAddr...)
+
 	oldPrefixedStore := prefix.NewStore(store, oldPrefixedContractPrefix)
 	oldPrefIter := oldPrefixedStore.Iterator(nil, nil)
 	defer oldPrefIter.Close()

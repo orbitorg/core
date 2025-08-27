@@ -260,72 +260,48 @@ func migrateParamsKey(store sdk.KVStore) error {
 
 	return nil
 }
-
-// migrateContractKeys migrates contract keys from 0x04 to 0x02
-// and removes length prefixes from addresses
 func migrateContractKeys(store sdk.KVStore) error {
 	oldPrefix := []byte{0x04}
 	newPrefix := []byte{0x02}
 
 	oldStore := prefix.NewStore(store, oldPrefix)
-	iterator := oldStore.Iterator(nil, nil)
-	defer iterator.Close()
+	iter := oldStore.Iterator(nil, nil)
+	defer iter.Close()
 
-	var migratedCount int
-	var lengthPrefixRemovedCount int
+	type kv struct {
+		oldKey []byte
+		newKey []byte
+		value  []byte
+	}
+	var toMigrate []kv
 
-	for ; iterator.Valid(); iterator.Next() {
-		// Copy the key and value to avoid issues with shared memory
-		originalKey := make([]byte, len(iterator.Key()))
-		copy(originalKey, iterator.Key())
+	for ; iter.Valid(); iter.Next() {
+		originalKey := append([]byte{}, iter.Key()...)
+		originalValue := append([]byte{}, iter.Value()...)
 
-		originalValue := make([]byte, len(iterator.Value()))
-		copy(originalValue, iterator.Value())
-
-		// Only migrate entries that look like contract addresses
-		// Valid forms:
-		// - 20-byte raw address
-		// - 21-byte length-prefixed with first byte == 20
+		// Only migrate if looks like contract address
 		if !(len(originalKey) == 20 || (len(originalKey) == 21 && int(originalKey[0]) == 20)) {
-			// Skip non-address keys such as sequence keys (e.g. "lastCodeId")
 			continue
 		}
 
-		// The key is the contract address with potential length prefix; remove if present
-		unprefixedKey, wasStripped := stripLenPrefixAddrOnly(originalKey)
-		if wasStripped {
-			fmt.Printf("Stripped length prefix from contract key: %X -> %X\n", originalKey, unprefixedKey)
-		}
+		unprefixedKey, _ := stripLenPrefixAddrOnly(originalKey)
 
-		// Track if we removed a length prefix
-		if wasStripped {
-			lengthPrefixRemovedCount++
-		}
+		oldFullKey := append(append([]byte{}, oldPrefix...), originalKey...)
+		newFullKey := append(append([]byte{}, newPrefix...), unprefixedKey...)
 
-		// Construct full keys
-		oldFullKey := append([]byte{}, oldPrefix...)
-		oldFullKey = append(oldFullKey, originalKey...)
-
-		newFullKey := append([]byte{}, newPrefix...)
-		newFullKey = append(newFullKey, unprefixedKey...)
-
-		// Add collision guard before setting: preserve existing value if different
-		if store.Has(newFullKey) && !bytes.Equal(store.Get(newFullKey), originalValue) {
-			// Keep existing entry, just delete old to avoid duplicates
-			store.Delete(oldFullKey)
-			migratedCount++
-			continue
-		}
-
-		// Set with new prefix and delete old
-		store.Set(newFullKey, originalValue)
-		store.Delete(oldFullKey)
-
-		migratedCount++
+		toMigrate = append(toMigrate, kv{oldKey: oldFullKey, newKey: newFullKey, value: originalValue})
 	}
 
-	fmt.Printf("migrated contractKey, migratedCount %d, lengthPrefixRemovedCount %d\n",
-		migratedCount, lengthPrefixRemovedCount)
+	// Now write & delete
+	for _, entry := range toMigrate {
+		if store.Has(entry.newKey) && !bytes.Equal(store.Get(entry.newKey), entry.value) {
+			// Collision: keep existing, just delete old
+			store.Delete(entry.oldKey)
+			continue
+		}
+		store.Set(entry.newKey, entry.value)
+		store.Delete(entry.oldKey)
+	}
 
 	return nil
 }
@@ -339,7 +315,6 @@ func migrateContractStoreKeys(store sdk.KVStore, contractAddresses [][]byte) err
 	fmt.Printf("Using %d pre-collected contracts to migrate storage\n", len(contractAddresses))
 
 	// Now migrate each contract's storage
-	var totalMigrated int
 	for i, originalContractAddr := range contractAddresses {
 		// Skip nil addresses if any
 		if originalContractAddr == nil {
@@ -363,37 +338,25 @@ func migrateContractStoreKeys(store sdk.KVStore, contractAddresses [][]byte) err
 		oldContractIter := oldContractStore.Iterator(nil, nil)
 
 		var contractKeyCount int
+		// inside migrateContractStoreKeys
 		for ; oldContractIter.Valid(); oldContractIter.Next() {
-			// Copy the key and value to avoid issues with shared memory
-			originalKey := make([]byte, len(oldContractIter.Key()))
-			copy(originalKey, oldContractIter.Key())
+			originalKey := append([]byte{}, oldContractIter.Key()...)
+			originalValue := append([]byte{}, oldContractIter.Value()...)
 
-			originalValue := make([]byte, len(oldContractIter.Value()))
-			copy(originalValue, oldContractIter.Value())
+			oldFullKey := append(append([]byte{}, oldContractPrefix...), originalKey...)
+			newFullKey := append(append([]byte{}, newContractPrefix...), originalKey...)
 
-			// Construct full keys - create new slices to avoid modifying the original prefixes
-			oldFullKey := append([]byte{}, oldContractPrefix...)
-			oldFullKey = append(oldFullKey, originalKey...)
-
-			// Always delete the old key to avoid stray entries
-			store.Delete(oldFullKey)
-
-			// Only create new entry if we have non-empty key and value
 			if len(originalKey) > 0 && len(originalValue) > 0 {
-				newFullKey := append([]byte{}, newContractPrefix...)
-				newFullKey = append(newFullKey, originalKey...)
-
-				// Add collision guard before setting
 				if store.Has(newFullKey) && !bytes.Equal(store.Get(newFullKey), originalValue) {
-					return fmt.Errorf("refusing to overwrite existing key %X during contract store migration", newFullKey)
+					return fmt.Errorf("collision on %X", newFullKey)
 				}
-
 				store.Set(newFullKey, originalValue)
 			}
 
-			contractKeyCount++
-			totalMigrated++
+			// delete last to avoid losing data
+			store.Delete(oldFullKey)
 		}
+
 		oldContractIter.Close()
 
 		fmt.Printf("Migrated %d keys for contract %X\n", contractKeyCount, unprefixedAddr)
@@ -438,9 +401,6 @@ func migrateContractStoreKeys(store sdk.KVStore, contractAddresses [][]byte) err
 		directMigrated++
 	}
 	directOldIter.Close()
-
-	fmt.Printf("Additionally migrated %d direct contract store keys\n", directMigrated)
-	fmt.Printf("Total migrated contract store keys: %d\n", totalMigrated+directMigrated)
 
 	return nil
 }

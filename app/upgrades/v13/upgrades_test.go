@@ -29,13 +29,13 @@ type UpgradeTestSuite struct {
 
 // Configure address verification for tests so 20-byte payloads are valid addresses.
 func (s *UpgradeTestSuite) SetupSuite() {
-    cfg := sdk.GetConfig()
-    cfg.SetAddressVerifier(func(bz []byte) error {
-        if len(bz) == 20 {
-            return nil
-        }
-        return fmt.Errorf("invalid address length %d", len(bz))
-    })
+	cfg := sdk.GetConfig()
+	cfg.SetAddressVerifier(func(bz []byte) error {
+		if len(bz) == 20 {
+			return nil
+		}
+		return fmt.Errorf("invalid address length %d", len(bz))
+	})
 }
 
 func TestUpgradeTestSuite(t *testing.T) {
@@ -464,7 +464,7 @@ func (s *UpgradeTestSuite) TestMigrateContractKeys() {
 	// Add contract data
 	kvStore.Set(append([]byte{0x04}, addr1...), []byte("contract1"))
 	kvStore.Set(append([]byte{0x04}, lengthPrefixedAddr...), []byte("contract2"))
-	kvStore.Set(append([]byte{0x04}, fakeHead...), []byte("contract3"))
+	kvStore.Set(append([]byte{0x04}, fakeHead...), []byte("notacontract"))
 
 	// Run the migration
 	err := v13.MigrateContractKeys(kvStore)
@@ -484,10 +484,9 @@ func (s *UpgradeTestSuite) TestMigrateContractKeys() {
 	require.Equal(s.T(), []byte("contract2"),
 		kvStore.Get(append([]byte{0x02}, unprefixedAddr...)), "Contract key should be migrated to 0x02 without length prefix")
 
-	// For non-address head (len=5), it must not be stripped and be copied as-is under new prefix
-	require.Equal(s.T(), []byte("contract3"),
-		kvStore.Get(append([]byte{0x02}, fakeHead...)), "Non-address-like head must remain unchanged")
-	require.Nil(s.T(), kvStore.Get(append([]byte{0x04}, fakeHead...)), "Old non-address key must be removed")
+	// For non-address head (len=5), it must be keeped
+	require.Equal(s.T(), []byte("notacontract"),
+		kvStore.Get(append([]byte{0x04}, fakeHead...)), "Non-address-like head must remain unchanged")
 }
 
 // TestReadContractHistoryWithFallback tests reading contract history with fallback to old prefix
