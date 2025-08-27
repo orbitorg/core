@@ -162,53 +162,6 @@ func createMockWasmKeeper(storeKey storetypes.StoreKey) wasmkeeper.Keeper {
 	return keeper
 }
 
-// TestRemoveLengthPrefixIfNeeded tests the length prefix removal function
-func (s *UpgradeTestSuite) TestRemoveLengthPrefixIfNeeded() {
-	testCases := []struct {
-		name     string
-		input    []byte
-		expected []byte
-	}{
-		{
-			name:     "empty input",
-			input:    []byte{},
-			expected: []byte{},
-		},
-		{
-			name:     "non-prefixed address",
-			input:    []byte{0x01, 0x02, 0x03, 0x04},
-			expected: []byte{0x01, 0x02, 0x03, 0x04},
-		},
-		{
-			name:     "length-prefixed address (20 bytes)",
-			input:    append([]byte{20}, bytes.Repeat([]byte{0x01}, 20)...),
-			expected: bytes.Repeat([]byte{0x01}, 20),
-		},
-		{
-			name:     "invalid length prefix (too large)",
-			input:    append([]byte{50}, bytes.Repeat([]byte{0x01}, 10)...),
-			expected: append([]byte{50}, bytes.Repeat([]byte{0x01}, 10)...),
-		},
-		{
-			name:     "invalid length prefix (mismatch)",
-			input:    append([]byte{10}, bytes.Repeat([]byte{0x01}, 20)...),
-			expected: append([]byte{10}, bytes.Repeat([]byte{0x01}, 20)...),
-		},
-		{
-			name:     "length-prefixed payload not a valid address (len=5)",
-			input:    append([]byte{5}, bytes.Repeat([]byte{0xAA}, 5)...),
-			expected: append([]byte{5}, bytes.Repeat([]byte{0xAA}, 5)...),
-		},
-	}
-
-	for _, tc := range testCases {
-		s.Run(tc.name, func() {
-			result := v13.RemoveLengthPrefixIfNeeded(tc.input)
-			s.Require().Equal(tc.expected, result)
-		})
-	}
-}
-
 // TestMigrateWasmKeysWithLengthPrefixedAddresses tests migration with length-prefixed addresses
 func (s *UpgradeTestSuite) TestMigrateWasmKeysWithLengthPrefixedAddresses() {
 	// Setup in-memory database and context
@@ -304,7 +257,7 @@ func (s *UpgradeTestSuite) TestCollectContractAddresses() {
 	kvStore.Set(append([]byte{0x04}, lengthPrefixedAddr...), []byte("contract3"))
 
 	// Call the function
-	addresses := v13.CollectContractAddresses(kvStore)
+	addresses := v13.CollectContractAddresses(kvStore, ctx.Logger())
 
 	// Verify results
 	s.Require().Equal(3, len(addresses), "Should collect 3 contract addresses")
@@ -738,6 +691,6 @@ func (s *UpgradeTestSuite) TestIterateAllContractStateWithFallback() {
 
 	// We expect keys: 0x01, 0x02, 0x03 with values v1, v2, v3
 	s.Require().Equal(3, len(keys))
-	s.Require().ElementsMatch([][]byte{[]byte{0x01}, []byte{0x02}, []byte{0x03}}, keys)
+	s.Require().ElementsMatch([][]byte{{0x01}, {0x02}, {0x03}}, keys)
 	s.Require().ElementsMatch([][]byte{[]byte("v1"), []byte("v2"), []byte("v3")}, values)
 }

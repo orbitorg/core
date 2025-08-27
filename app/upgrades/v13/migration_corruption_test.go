@@ -84,9 +84,6 @@ func (s *MigrationCorruptionTestSuite) TestMigrationDataCorruption() {
 	kvStore.Set([]byte{0x10, 0x01, 0x00}, []byte("index-1"))
 	kvStore.Set([]byte{0x11}, []byte("params"))
 
-	// Verify pre-migration state
-	s.verifyPreMigrationState(kvStore, legitimateAddr, problematicKey1, problematicKey2, collisionKey)
-
 	// Create a mock wasm keeper
 	mockWasmKeeper := createMockWasmKeeperForCorruption(wasmStoreKey)
 
@@ -103,31 +100,6 @@ func (s *MigrationCorruptionTestSuite) TestMigrationDataCorruption() {
 
 	// Verify post-migration state
 	s.verifyPostMigrationState(kvStore, legitimateAddr, problematicKey1, problematicKey2, collisionKey)
-}
-
-func (s *MigrationCorruptionTestSuite) verifyPreMigrationState(kvStore sdk.KVStore, legitimateAddr, problematicKey1, problematicKey2, collisionKey []byte) {
-	// Verify all original keys exist
-	require.NotNil(s.T(), kvStore.Get(append([]byte{0x04}, legitimateAddr...)), "Legitimate contract should exist")
-	require.NotNil(s.T(), kvStore.Get(append([]byte{0x04}, problematicKey1...)), "Problematic key 1 should exist")
-	require.NotNil(s.T(), kvStore.Get(append([]byte{0x04}, problematicKey2...)), "Problematic key 2 should exist")
-	require.NotNil(s.T(), kvStore.Get(append([]byte{0x04}, collisionKey...)), "Collision key should exist")
-
-	// Show what the old unsafe logic would have done
-	oldLegitimate := v13.RemoveLengthPrefixIfNeeded(legitimateAddr)
-	oldProblematic1 := v13.RemoveLengthPrefixIfNeeded(problematicKey1)
-	oldProblematic2 := v13.RemoveLengthPrefixIfNeeded(problematicKey2)
-	oldCollision := v13.RemoveLengthPrefixIfNeeded(collisionKey)
-
-	fmt.Printf("Pre-migration analysis:\n")
-	fmt.Printf("  Legitimate addr: %X -> %X (should strip)\n", legitimateAddr, oldLegitimate)
-	fmt.Printf("  Problematic 1: %X -> %X (should NOT strip, but old logic does!)\n", problematicKey1, oldProblematic1)
-	fmt.Printf("  Problematic 2: %X -> %X (should NOT strip, but old logic does!)\n", problematicKey2, oldProblematic2)
-	fmt.Printf("  Collision key: %X -> %X (creates collision with legitimate!)\n", collisionKey, oldCollision)
-
-	// Demonstrate the collision that would occur with old logic
-	if bytes.Equal(oldLegitimate, oldCollision) {
-		fmt.Printf("COLLISION DETECTED: Legitimate and collision keys would map to same result!\n")
-	}
 }
 
 func (s *MigrationCorruptionTestSuite) verifyPostMigrationState(kvStore sdk.KVStore, legitimateAddr, problematicKey1, problematicKey2, collisionKey []byte) {
@@ -171,85 +143,6 @@ func (s *MigrationCorruptionTestSuite) verifyPostMigrationState(kvStore sdk.KVSt
 	}
 
 	fmt.Printf("Post-migration verification passed - no data corruption detected\n")
-}
-
-// TestMigrationWithUnsafeLogicSimulation simulates what would happen with the old unsafe logic
-func (s *MigrationCorruptionTestSuite) TestMigrationWithUnsafeLogicSimulation() {
-	// This test simulates the migration using the old unsafe logic to demonstrate the problems
-
-	// Setup in-memory database and context
-	db := dbm.NewMemDB()
-	wasmStoreKey := sdk.NewKVStoreKey(wasmtypes.StoreKey)
-	stateStore := store.NewCommitMultiStore(db)
-	stateStore.MountStoreWithDB(wasmStoreKey, storetypes.StoreTypeIAVL, db)
-	require.NoError(s.T(), stateStore.LoadLatestVersion())
-
-	ctx := sdk.NewContext(stateStore, cmtproto.Header{}, false, log.NewNopLogger())
-	kvStore := ctx.KVStore(wasmStoreKey)
-
-	// Create keys that would cause problems with unsafe logic
-	keys := []struct {
-		name  string
-		key   []byte
-		value []byte
-	}{
-		{
-			name:  "legitimate",
-			key:   append([]byte{20}, bytes.Repeat([]byte{0xAA}, 20)...),
-			value: []byte("legit-value"),
-		},
-		{
-			name:  "collision-cause",
-			key:   append([]byte{0x14}, bytes.Repeat([]byte{0xAA}, 20)...),
-			value: []byte("collision-value"),
-		},
-		{
-			name:  "hash-like",
-			key:   append([]byte{0x1F}, bytes.Repeat([]byte{0xBB}, 31)...),
-			value: []byte("hash-value"),
-		},
-	}
-
-	// Store all keys in old format
-	for _, k := range keys {
-		kvStore.Set(append([]byte{0x04}, k.key...), k.value)
-	}
-
-	// Simulate unsafe migration
-	collisions := make(map[string][]string)
-	corruptedData := make(map[string][]byte)
-
-	for _, k := range keys {
-		// Use old unsafe logic
-		strippedKey := v13.RemoveLengthPrefixIfNeeded(k.key)
-		newFullKey := append([]byte{0x02}, strippedKey...)
-		newFullKeyStr := string(newFullKey)
-
-		// Check for collisions
-		if existingValue, exists := corruptedData[newFullKeyStr]; exists {
-			if !bytes.Equal(existingValue, k.value) {
-				collisions[newFullKeyStr] = append(collisions[newFullKeyStr], k.name)
-				fmt.Printf("COLLISION: Key %s would overwrite data at %X\n", k.name, newFullKey)
-				fmt.Printf("  Existing value: %s\n", string(existingValue))
-				fmt.Printf("  New value: %s\n", string(k.value))
-			}
-		} else {
-			collisions[newFullKeyStr] = []string{k.name}
-		}
-
-		corruptedData[newFullKeyStr] = k.value
-	}
-
-	// Verify that collisions would occur with unsafe logic
-	hasCollisions := false
-	for keyStr, names := range collisions {
-		if len(names) > 1 {
-			hasCollisions = true
-			fmt.Printf("UNSAFE LOGIC COLLISION: Keys %v would all map to %X\n", names, []byte(keyStr))
-		}
-	}
-
-	require.True(s.T(), hasCollisions, "Unsafe logic should cause collisions with this test data")
 }
 
 // TestCollisionGuardEffectiveness tests that the collision guards actually prevent data corruption

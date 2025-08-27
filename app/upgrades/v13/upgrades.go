@@ -34,7 +34,7 @@ func CreateV13UpgradeHandler(
 	}
 }
 
-func migrateWasmKeys(ctx sdk.Context, wasmKeeper wasmkeeper.Keeper, wasmStoreKey storetypes.StoreKey) error {
+func migrateWasmKeys(ctx sdk.Context, _ wasmkeeper.Keeper, wasmStoreKey storetypes.StoreKey) error {
 	store := ctx.KVStore(wasmStoreKey)
 
 	ctx.Logger().Info("Starting WASM key migration from forked to original format")
@@ -52,7 +52,7 @@ func migrateWasmKeys(ctx sdk.Context, wasmKeeper wasmkeeper.Keeper, wasmStoreKey
 	}
 
 	// First, collect all contract addresses before any migration
-	contractAddresses := collectContractAddresses(store)
+	contractAddresses := collectContractAddresses(store, ctx.Logger())
 	ctx.Logger().Info(fmt.Sprintf("Found %d contracts for migration", len(contractAddresses)))
 
 	// Add validation of collected addresses
@@ -223,14 +223,6 @@ func stripLenPrefixAddrOnly(b []byte) (out []byte, stripped bool) {
 	return out, false
 }
 
-// removeLengthPrefixIfNeeded is deprecated and unsafe - use stripLenPrefixAddrOnly instead
-// This function is kept for backward compatibility in migration code
-func removeLengthPrefixIfNeeded(bz []byte) []byte {
-	// Only strip if this is exactly a 21-byte length-prefixed address
-	stripped, _ := stripLenPrefixAddrOnly(bz)
-	return stripped
-}
-
 // migrateContractHistoryKeys migrates contract history keys from 0x06 to 0x05
 func migrateContractHistoryKeys(store sdk.KVStore) error {
 	oldPrefix := []byte{0x06}
@@ -260,6 +252,7 @@ func migrateParamsKey(store sdk.KVStore) error {
 
 	return nil
 }
+
 func migrateContractKeys(store sdk.KVStore) error {
 	oldPrefix := []byte{0x04}
 	newPrefix := []byte{0x02}
@@ -443,7 +436,7 @@ func migratePrefix(store sdk.KVStore, oldPrefix, newPrefix []byte, name string) 
 }
 
 // collectContractAddresses gets all contract addresses before any migration
-func collectContractAddresses(store sdk.KVStore) [][]byte {
+func collectContractAddresses(store sdk.KVStore, logger log.Logger) [][]byte {
 	// Contract addresses are stored with prefix 0x04 before migration
 	contractInfoPrefix := []byte{0x04}
 	contractInfoStore := prefix.NewStore(store, contractInfoPrefix)
@@ -463,13 +456,7 @@ func collectContractAddresses(store sdk.KVStore) [][]byte {
 			contractAddresses = append(contractAddresses, addr)
 
 			// Log each contract address for debugging
-			fmt.Printf("Found contract address: %X (length: %d)\n", addr, len(addr))
-
-			// Also log what it would look like unprefixed
-			unprefixedAddr := removeLengthPrefixIfNeeded(addr)
-			if len(addr) != len(unprefixedAddr) {
-				fmt.Printf("  - Would be unprefixed to: %X (length: %d)\n", unprefixedAddr, len(unprefixedAddr))
-			}
+			logger.Info(fmt.Sprintf("Found contract address: %X (length: %d)\n", addr, len(addr)))
 		}
 	}
 
@@ -544,14 +531,9 @@ func MigrateWasmKeys(ctx sdk.Context, wasmKeeper wasmkeeper.Keeper, wasmStoreKey
 	return migrateWasmKeys(ctx, wasmKeeper, wasmStoreKey)
 }
 
-// RemoveLengthPrefixIfNeeded Exported for testing
-func RemoveLengthPrefixIfNeeded(bz []byte) []byte {
-	return removeLengthPrefixIfNeeded(bz)
-}
-
 // CollectContractAddresses Exported for testing
-func CollectContractAddresses(store sdk.KVStore) [][]byte {
-	return collectContractAddresses(store)
+func CollectContractAddresses(store sdk.KVStore, logger log.Logger) [][]byte {
+	return collectContractAddresses(store, logger)
 }
 
 // MigrateContractStoreKeys Exported for testing

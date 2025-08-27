@@ -44,7 +44,6 @@ const (
 var (
 	IsPeriodLastBlock                   = util.IsPeriodLastBlock
 	AddressVerifier                     = util.AddressVerifier
-	RemoveLengthPrefixIfNeeded          = util.RemoveLengthPrefixIfNeeded
 	ReadContractHistoryWithFallback     = util.ReadContractHistoryWithFallback
 	IterateContractHistoryWithFallback  = util.IterateContractHistoryWithFallback
 	ReadContractInfoWithFallback        = util.ReadContractInfoWithFallback

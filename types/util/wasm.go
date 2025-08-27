@@ -18,14 +18,6 @@ func stripLenPrefixAddrOnly(b []byte) (out []byte, stripped bool) {
 	return out, false
 }
 
-// RemoveLengthPrefixIfNeeded is deprecated and unsafe - use stripLenPrefixAddrOnly instead
-// This function is kept for backward compatibility but should not be used for new code
-func RemoveLengthPrefixIfNeeded(bz []byte) []byte {
-	// Only strip if this is exactly a 21-byte length-prefixed address
-	stripped, _ := stripLenPrefixAddrOnly(bz)
-	return stripped
-}
-
 // ReadContractHistoryWithFallback reads contract history with fallback to old prefix for backward compatibility
 // This function handles the case where some contract history data might not have been migrated yet
 func ReadContractHistoryWithFallback(store sdk.KVStore, contractAddr sdk.AccAddress) ([]byte, bool) {

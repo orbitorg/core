@@ -251,84 +251,6 @@ func (s *ComprehensiveMigrationTestSuite) TestDataIntegrityAfterMigration() {
 	fmt.Printf("Successfully migrated %d entries with no data loss\n", migrated)
 }
 
-// TestUnsafeVsSafeBehaviorComparison directly compares old unsafe vs new safe behavior
-func (s *ComprehensiveMigrationTestSuite) TestUnsafeVsSafeBehaviorComparison() {
-	testKeys := []struct {
-		name        string
-		key         []byte
-		shouldStrip bool
-		description string
-	}{
-		{
-			name:        "legitimate_addr",
-			key:         append([]byte{20}, bytes.Repeat([]byte{0xAA}, 20)...),
-			shouldStrip: true,
-			description: "21-byte length-prefixed address should be stripped",
-		},
-		{
-			name:        "hash_collision",
-			key:         append([]byte{0x1F}, bytes.Repeat([]byte{0xBB}, 31)...),
-			shouldStrip: false,
-			description: "32-byte hash starting with 0x1F should NOT be stripped",
-		},
-		{
-			name:        "storage_key",
-			key:         append([]byte{0x14}, bytes.Repeat([]byte{0xCC}, 25)...),
-			shouldStrip: false,
-			description: "26-byte storage key starting with 0x14 should NOT be stripped",
-		},
-		{
-			name:        "composite_key",
-			key:         append(append([]byte{0x14}, bytes.Repeat([]byte{0xDD}, 20)...), []byte{0x01, 0x02}...),
-			shouldStrip: false,
-			description: "Composite key [addr+data] should NOT be stripped",
-		},
-		{
-			name:        "regular_20_byte",
-			key:         bytes.Repeat([]byte{0xEE}, 20),
-			shouldStrip: false,
-			description: "Regular 20-byte address without prefix should NOT be stripped",
-		},
-	}
-
-	fmt.Printf("\n=== UNSAFE vs SAFE BEHAVIOR COMPARISON ===\n")
-
-	for _, test := range testKeys {
-		// Old unsafe behavior
-		oldResult := v13.RemoveLengthPrefixIfNeeded(test.key)
-
-		// New safe behavior
-		newResult, wasStripped := stripLenPrefixAddrOnlyTest(test.key)
-
-		// Compare results
-		behavioral_match := (wasStripped == test.shouldStrip)
-		data_match := bytes.Equal(oldResult, newResult)
-
-		fmt.Printf("\nTest: %s\n", test.name)
-		fmt.Printf("  Description: %s\n", test.description)
-		fmt.Printf("  Input: %X (len=%d)\n", test.key, len(test.key))
-		fmt.Printf("  Old result: %X (len=%d)\n", oldResult, len(oldResult))
-		fmt.Printf("  New result: %X (len=%d, stripped=%t)\n", newResult, len(newResult), wasStripped)
-		fmt.Printf("  Expected strip: %t, Actual strip: %t ✓=%t\n", test.shouldStrip, wasStripped, behavioral_match)
-		fmt.Printf("  Data matches: %t\n", data_match)
-
-		// The new behavior should match expectations
-		s.Require().Equal(test.shouldStrip, wasStripped,
-			"Safe behavior should match expectations for %s", test.name)
-
-		// If we expect no stripping, the new result should be unchanged
-		if !test.shouldStrip {
-			s.Require().Equal(test.key, newResult,
-				"Key should be unchanged when no stripping expected for %s", test.name)
-		}
-
-		// Mark unsafe behavior
-		if !data_match {
-			fmt.Printf("  ⚠️  UNSAFE BEHAVIOR: Old logic would corrupt this key!\n")
-		}
-	}
-}
-
 // Helper functions
 
 func (s *ComprehensiveMigrationTestSuite) setupRealisticTestData(kvStore sdk.KVStore) map[string]interface{} {
@@ -369,16 +291,4 @@ func (s *ComprehensiveMigrationTestSuite) verifyMigrationResults(kvStore sdk.KVS
 
 	// The count may differ due to key restructuring, but data should be preserved
 	s.Require().Greater(postCount, 0, "Should have entries after migration")
-}
-
-// stripLenPrefixAddrOnlyTest is a test version of the safe stripping function
-func stripLenPrefixAddrOnlyTest(b []byte) (out []byte, stripped bool) {
-	if len(b) == 21 && int(b[0]) == 20 {
-		out = make([]byte, 20)
-		copy(out, b[1:21])
-		return out, true
-	}
-	out = make([]byte, len(b))
-	copy(out, b)
-	return out, false
 }
