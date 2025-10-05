@@ -27,8 +27,7 @@ import (
 	feegrantkeeper "cosmossdk.io/x/feegrant/keeper"
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
-	taxkeeper "github.com/classic-terra/core/v3/x/tax/keeper"
-	taxtypes "github.com/classic-terra/core/v3/x/tax/types"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/address"
@@ -61,6 +60,7 @@ import (
 	wasm "github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+
 	customstaking "github.com/classic-terra/core/v3/custom/staking"
 	customwasmkeeper "github.com/classic-terra/core/v3/custom/wasm/keeper"
 	terrawasm "github.com/classic-terra/core/v3/wasmbinding"
@@ -70,6 +70,8 @@ import (
 	markettypes "github.com/classic-terra/core/v3/x/market/types"
 	oraclekeeper "github.com/classic-terra/core/v3/x/oracle/keeper"
 	oracletypes "github.com/classic-terra/core/v3/x/oracle/types"
+	taxkeeper "github.com/classic-terra/core/v3/x/tax/keeper"
+	taxtypes "github.com/classic-terra/core/v3/x/tax/types"
 	taxexemptionkeeper "github.com/classic-terra/core/v3/x/taxexemption/keeper"
 	taxexemptiontypes "github.com/classic-terra/core/v3/x/taxexemption/types"
 	treasurykeeper "github.com/classic-terra/core/v3/x/treasury/keeper"
