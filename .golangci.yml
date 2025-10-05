@@ -51,10 +51,6 @@ linters:
           - staticcheck
         path: migrations
         text: 'SA1019:'
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
 issues:
   max-issues-per-linter: 10000
   max-same-issues: 10000
@@ -62,9 +58,3 @@ formatters:
   enable:
     - gci
     - gofumpt
-  exclusions:
-    generated: lax
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
