@@ -377,7 +377,7 @@ func NewTerraApp(
 			this is a workaround for the fact that the client params are not set in the
 			genesis and the upgrade handler is not enough */
 			// Create a writeable context outside block processing
-			ctx := app.BaseApp.NewUncachedContext(true, tmproto.Header{})
+			ctx := app.NewUncachedContext(true, tmproto.Header{})
 
 			// Raw-store check avoids calling GetParams() (which panics if missing)
 			store := ctx.KVStore(app.GetKey(ibcexported.StoreKey))
@@ -387,7 +387,7 @@ func NewTerraApp(
 			}
 		}
 
-		ctx := app.BaseApp.NewUncachedContext(true, tmproto.Header{})
+		ctx := app.NewUncachedContext(true, tmproto.Header{})
 		// Initialize pinned codes in wasmvm as they are not persisted there
 		if err := app.WasmKeeper.InitializePinnedCodes(ctx); err != nil {
 			tmos.Exit(fmt.Sprintf("failed initialize pinned codes %s", err))
@@ -531,8 +531,8 @@ func (app *TerraApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIC
 
 // RegisterTxService implements the Application.RegisterTxService method.
 func (app *TerraApp) RegisterTxService(clientCtx client.Context) {
-	authtx.RegisterTxService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.BaseApp.Simulate, app.interfaceRegistry)
-	customauthtx.RegisterTxService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.TreasuryKeeper, app.TaxExemptionKeeper, app.TaxKeeper)
+	authtx.RegisterTxService(app.GRPCQueryRouter(), clientCtx, app.Simulate, app.interfaceRegistry)
+	customauthtx.RegisterTxService(app.GRPCQueryRouter(), clientCtx, app.TreasuryKeeper, app.TaxExemptionKeeper, app.TaxKeeper)
 }
 
 // RegisterTendermintService implements the Application.RegisterTendermintService method.
@@ -540,7 +540,7 @@ func (app *TerraApp) RegisterTendermintService(clientCtx client.Context) {
 	cmtApp := server.NewCometABCIWrapper(app)
 	cmtservice.RegisterTendermintService(
 		clientCtx,
-		app.BaseApp.GRPCQueryRouter(),
+		app.GRPCQueryRouter(),
 		app.interfaceRegistry,
 		cmtApp.Query,
 	)

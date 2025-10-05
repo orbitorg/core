@@ -104,7 +104,7 @@ func (lgva LazyGradedVestingAccount) GetVestingCoins(blockTime time.Time) sdk.Co
 
 // LockedCoins returns the set of coins that are not spendable (i.e. locked).
 func (lgva LazyGradedVestingAccount) LockedCoins(blockTime time.Time) sdk.Coins {
-	return lgva.BaseVestingAccount.LockedCoinsFromVesting(lgva.GetVestingCoins(blockTime))
+	return lgva.LockedCoinsFromVesting(lgva.GetVestingCoins(blockTime))
 }
 
 // TrackDelegation tracks a delegation amount for any given vesting account type

@@ -47,7 +47,7 @@ func createTestApp(isCheckTx bool, tempDir string) (*terraapp.TerraApp, sdk.Cont
 		tempDir, terraapp.MakeEncodingConfig(),
 		simtestutil.EmptyAppOptions{}, wasmOpts,
 	)
-	ctx := app.BaseApp.NewContext(isCheckTx)
+	ctx := app.NewContext(isCheckTx)
 	app.AccountKeeper.Params.Set(ctx, authtypes.DefaultParams())
 	app.TreasuryKeeper.SetParams(ctx, treasurytypes.DefaultParams())
 	app.DistrKeeper.Params.Set(ctx, distributiontypes.DefaultParams())

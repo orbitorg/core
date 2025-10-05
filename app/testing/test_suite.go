@@ -68,8 +68,8 @@ func (s *KeeperTestHelper) Setup(_ *testing.T, chainID string) {
 	// Create context after genesis has been initialized and committed
 	// Height 1 because InitChain and Commit have been called in SetupApp
 	header := tmproto.Header{Height: 1, ChainID: chainID, Time: time.Now().UTC()}
-	s.Ctx = s.App.BaseApp.NewUncachedContext(false, header)
-	s.CheckCtx = s.App.BaseApp.NewUncachedContext(true, header)
+	s.Ctx = s.App.NewUncachedContext(false, header)
+	s.CheckCtx = s.App.NewUncachedContext(true, header)
 
 	s.App.ConsensusParamsKeeper.ParamsStore.Set(s.Ctx, *simtestutil.DefaultConsensusParams)
 
@@ -390,6 +390,6 @@ func (s *KeeperTestHelper) NextBlock() {
 	s.Require().NoError(err)
 	_, err = s.App.Commit()
 	s.Require().NoError(err)
-	s.Ctx = s.App.BaseApp.NewUncachedContext(false, hdr)
-	s.CheckCtx = s.App.BaseApp.NewUncachedContext(true, hdr)
+	s.Ctx = s.App.NewUncachedContext(false, hdr)
+	s.CheckCtx = s.App.NewUncachedContext(true, hdr)
 }

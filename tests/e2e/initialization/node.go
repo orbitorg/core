@@ -119,9 +119,9 @@ func (n *internalNode) createAppConfig(nodeConfig *NodeConfig) {
 	appCfgPath := filepath.Join(n.configDir(), "config", "app.toml")
 
 	appConfig := srvconfig.DefaultConfig()
-	appConfig.BaseConfig.Pruning = nodeConfig.Pruning
-	appConfig.BaseConfig.PruningKeepRecent = nodeConfig.PruningKeepRecent
-	appConfig.BaseConfig.PruningInterval = nodeConfig.PruningInterval
+	appConfig.Pruning = nodeConfig.Pruning
+	appConfig.PruningKeepRecent = nodeConfig.PruningKeepRecent
+	appConfig.PruningInterval = nodeConfig.PruningInterval
 	appConfig.API.Enable = true
 	appConfig.MinGasPrices = fmt.Sprintf("%s%s", MinGasPrice, TerraDenom)
 	appConfig.StateSync.SnapshotInterval = nodeConfig.SnapshotInterval
