@@ -216,7 +216,6 @@ func simulationModules(
 
 func orderBeginBlockers() []string {
 	return []string{
-		upgradetypes.ModuleName,
 		minttypes.ModuleName,
 		distrtypes.ModuleName,
 		slashingtypes.ModuleName,

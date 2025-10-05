@@ -78,8 +78,8 @@ import (
 
 type AppKeepers struct {
 	// appKeepers.keys to access the substores
-	keys  map[string]*storetypes.KVStoreKey
-	tkeys map[string]*storetypes.TransientStoreKey
+	keys    map[string]*storetypes.KVStoreKey
+	tkeys   map[string]*storetypes.TransientStoreKey
 	memKeys map[string]*storetypes.MemoryStoreKey
 
 	// keepers
@@ -161,8 +161,8 @@ func NewAppKeepers(
 	memKeys := map[string]*storetypes.MemoryStoreKey{}
 
 	appKeepers := &AppKeepers{
-		keys:  keys,
-		tkeys: tkeys,
+		keys:    keys,
+		tkeys:   tkeys,
 		memKeys: memKeys,
 	}
 
@@ -180,7 +180,12 @@ func NewAppKeepers(
 	)
 
 	// set the BaseApp's parameter store
-	appKeepers.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(appCodec, runtime.NewKVStoreService(keys[consensusparamtypes.StoreKey]), authtypes.NewModuleAddress(govtypes.ModuleName).String(), runtime.EventService{})
+	appKeepers.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[consensusparamtypes.StoreKey]),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		runtime.EventService{},
+	)
 	bApp.SetParamStore(appKeepers.ConsensusParamsKeeper.ParamsStore)
 
 	// add keepers
@@ -372,9 +377,9 @@ func NewAppKeepers(
 		appCodec,
 		runtime.NewKVStoreService(appKeepers.keys[ibctransfertypes.StoreKey]),
 		appKeepers.GetSubspace(ibctransfertypes.ModuleName),
-		appKeepers.IBCHooksWrapper, // ICS4Wrapper (hooks)
+		appKeepers.IBCHooksWrapper,         // ICS4Wrapper (hooks)
 		appKeepers.IBCKeeper.ChannelKeeper, // ChannelKeeper
-		bApp.MsgServiceRouter(), // MessageRouter
+		bApp.MsgServiceRouter(),            // MessageRouter
 		appKeepers.AccountKeeper,
 		appKeepers.BankKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
@@ -424,17 +429,17 @@ func NewAppKeepers(
 		appKeepers.AccountKeeper,
 		appKeepers.BankKeeper,
 		appKeepers.StakingKeeper,
-		distrkeeper.NewQuerier(appKeepers.DistrKeeper), // DistributionKeeper
-		appKeepers.IBCHooksWrapper, // ICS4Wrapper (hooks)
-		appKeepers.IBCKeeper.ChannelKeeper, // ChannelKeeper
-		appKeepers.IBCKeeper.ChannelKeeperV2, // ChannelKeeperV2
-		appKeepers.TransferKeeper, // ICS20TransferPortSource
-		bApp.MsgServiceRouter(), // MessageRouter
-		bApp.GRPCQueryRouter(), // GRPCQueryRouter
-		wasmDir, // homeDir
-		wasmNodeConfig, // NodeConfig
-		wasmVMConfig, // VMConfig
-		append(wasmkeeper.BuiltInCapabilities(), "terra"), // availableCapabilities
+		distrkeeper.NewQuerier(appKeepers.DistrKeeper),           // DistributionKeeper
+		appKeepers.IBCHooksWrapper,                               // ICS4Wrapper (hooks)
+		appKeepers.IBCKeeper.ChannelKeeper,                       // ChannelKeeper
+		appKeepers.IBCKeeper.ChannelKeeperV2,                     // ChannelKeeperV2
+		appKeepers.TransferKeeper,                                // ICS20TransferPortSource
+		bApp.MsgServiceRouter(),                                  // MessageRouter
+		bApp.GRPCQueryRouter(),                                   // GRPCQueryRouter
+		wasmDir,                                                  // homeDir
+		wasmNodeConfig,                                           // NodeConfig
+		wasmVMConfig,                                             // VMConfig
+		append(wasmkeeper.BuiltInCapabilities(), "terra"),        // availableCapabilities
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(), // authority
 		wasmOpts..., // Options
 	)
@@ -460,7 +465,7 @@ func NewAppKeepers(
 	govKeeper.SetLegacyRouter(govRouter)
 	appKeepers.GovKeeper = *govKeeper.SetHooks(
 		govtypes.NewMultiGovHooks(
-			// register the governance hooks
+		// register the governance hooks
 		),
 	)
 
