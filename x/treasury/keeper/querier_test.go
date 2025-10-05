@@ -3,14 +3,15 @@ package keeper
 import (
 	"testing"
 
-	core "github.com/classic-terra/core/v3/types"
-	"github.com/classic-terra/core/v3/x/treasury/types"
-
 	"github.com/stretchr/testify/require"
 
 	sdkmath "cosmossdk.io/math"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+
+	core "github.com/classic-terra/core/v3/types"
+	"github.com/classic-terra/core/v3/x/treasury/types"
 )
 
 func TestQueryParams(t *testing.T) {

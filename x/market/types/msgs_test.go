@@ -3,12 +3,13 @@ package types
 import (
 	"testing"
 
-	core "github.com/classic-terra/core/v3/types"
-
 	"github.com/stretchr/testify/require"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkmath "cosmossdk.io/math"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	core "github.com/classic-terra/core/v3/types"
 )
 
 func TestMsgSwap(t *testing.T) {

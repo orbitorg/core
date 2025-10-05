@@ -4,16 +4,19 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"cosmossdk.io/math"
-	apptesting "github.com/classic-terra/core/v3/app/testing"
-	"github.com/classic-terra/core/v3/types"
+
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	disttypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	"github.com/cosmos/cosmos-sdk/x/staking/testutil"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/stretchr/testify/suite"
+
+	apptesting "github.com/classic-terra/core/v3/app/testing"
+	"github.com/classic-terra/core/v3/types"
 )
 
 type StakingTestSuite struct {

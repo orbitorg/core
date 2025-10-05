@@ -3,11 +3,14 @@ package keeper
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"cosmossdk.io/math"
 	sdkmath "cosmossdk.io/math"
-	core "github.com/classic-terra/core/v3/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/require"
+
+	core "github.com/classic-terra/core/v3/types"
 )
 
 func TestFeeRewardsForEpoch(t *testing.T) {

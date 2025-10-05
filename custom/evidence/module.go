@@ -2,6 +2,7 @@ package evidence
 
 import (
 	"cosmossdk.io/x/evidence"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/module"
 

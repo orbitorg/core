@@ -3,13 +3,13 @@ package keeper
 import (
 	"fmt"
 
-	"cosmossdk.io/log"
-
 	gogotypes "github.com/gogo/protobuf/types"
 
 	errorsmod "cosmossdk.io/errors"
+	"cosmossdk.io/log"
 	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"

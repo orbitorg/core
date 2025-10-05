@@ -3,8 +3,9 @@ package types
 import (
 	"fmt"
 
-	"cosmossdk.io/math"
 	"gopkg.in/yaml.v2"
+
+	"cosmossdk.io/math"
 
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 

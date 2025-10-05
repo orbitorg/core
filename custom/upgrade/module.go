@@ -2,6 +2,7 @@ package upgrade
 
 import (
 	"cosmossdk.io/x/upgrade"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/module"
 

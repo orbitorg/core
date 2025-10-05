@@ -6,10 +6,11 @@ import (
 	"strings"
 
 	"cosmossdk.io/math"
-	"github.com/classic-terra/core/v3/x/oracle/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+
+	"github.com/classic-terra/core/v3/x/oracle/types"
 )
 
 // OrganizeBallotByDenom collects all oracle votes for the period, categorized by the votes' denom parameter

@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"cosmossdk.io/math"
 	"gopkg.in/yaml.v2"
+
+	"cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

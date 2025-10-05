@@ -4,12 +4,14 @@ import (
 	"os"
 	"testing"
 
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	apptesting "github.com/classic-terra/core/v3/app/testing"
 	"github.com/stretchr/testify/suite"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+
+	apptesting "github.com/classic-terra/core/v3/app/testing"
 )
 
 type WasmTestSuite struct {

@@ -1,6 +1,7 @@
 package keepers
 
 import (
+	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v10"
 	icacontroller "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller"
 	icacontrollertypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/types"
 	icahost "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/host"
@@ -9,8 +10,6 @@ import (
 	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
 
-	"github.com/classic-terra/core/v3/x/treasury"
-	treasurytypes "github.com/classic-terra/core/v3/x/treasury/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	"github.com/cosmos/cosmos-sdk/x/params"
@@ -19,7 +18,8 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 
-	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v10"
+	"github.com/classic-terra/core/v3/x/treasury"
+	treasurytypes "github.com/classic-terra/core/v3/x/treasury/types"
 )
 
 func (appKeepers *AppKeepers) newGovRouter() govv1beta1.Router {

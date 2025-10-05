@@ -4,12 +4,13 @@ import (
 	"math/rand"
 	"testing"
 
-	core "github.com/classic-terra/core/v3/types"
-
 	"github.com/stretchr/testify/require"
 
 	sdkmath "cosmossdk.io/math"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	core "github.com/classic-terra/core/v3/types"
 )
 
 func TestSettle(t *testing.T) {

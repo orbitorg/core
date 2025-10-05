@@ -3,12 +3,15 @@ package v14
 import (
 	"context"
 
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
+
 	upgradetypes "cosmossdk.io/x/upgrade/types"
-	"github.com/classic-terra/core/v3/app/keepers"
-	"github.com/classic-terra/core/v3/app/upgrades"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
+
+	"github.com/classic-terra/core/v3/app/keepers"
+	"github.com/classic-terra/core/v3/app/upgrades"
 )
 
 // CreateV14UpgradeHandler wires module migrations for v14.
@@ -20,7 +23,6 @@ func CreateV14UpgradeHandler(
 	keepers *keepers.AppKeepers,
 ) upgradetypes.UpgradeHandler {
 	return func(ctx context.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
-
 		keepers.IBCKeeper.ClientKeeper.SetParams(sdk.UnwrapSDKContext(ctx), clienttypes.DefaultParams())
 
 		return mm.RunMigrations(ctx, cfg, fromVM)

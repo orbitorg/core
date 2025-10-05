@@ -1,4 +1,3 @@
-//nolint:revive
 package v13
 
 import (
@@ -6,16 +5,18 @@ import (
 	"context"
 	"fmt"
 
+	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/module"
+
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 
-	"cosmossdk.io/store/prefix"
-	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/classic-terra/core/v3/app/keepers"
 	"github.com/classic-terra/core/v3/app/upgrades"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/module"
 )
 
 // Helper for saving sequence keys

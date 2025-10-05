@@ -4,10 +4,13 @@ import (
 	"testing"
 	"time"
 
-	sdkmath "cosmossdk.io/math"
-	core "github.com/classic-terra/core/v3/types"
-	"github.com/cosmos/cosmos-sdk/x/staking/testutil"
 	"github.com/stretchr/testify/require"
+
+	sdkmath "cosmossdk.io/math"
+
+	"github.com/cosmos/cosmos-sdk/x/staking/testutil"
+
+	core "github.com/classic-terra/core/v3/types"
 )
 
 func TestCalculateVotingPower(t *testing.T) {

@@ -1,9 +1,11 @@
 package upgrades
 
 import (
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+
 	store "cosmossdk.io/store/types"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 

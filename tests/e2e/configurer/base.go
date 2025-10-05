@@ -1,8 +1,6 @@
 package configurer
 
 import (
-	"bufio"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -13,8 +11,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ory/dockertest/v3"
-	"github.com/ory/dockertest/v3/docker"
 	"github.com/stretchr/testify/require"
 
 	"github.com/classic-terra/core/v3/tests/e2e/configurer/chain"
@@ -83,39 +79,6 @@ func (bc *baseConfigurer) RunIBC() error {
 	return bc.runIBCRelayer(bc.chainConfigs[1], bc.chainConfigs[0], containers.HermesContainerName2)
 }
 
-func (bc *baseConfigurer) streamContainerLogs(ctx context.Context, res *dockertest.Resource, prefix string) {
-	r, w := io.Pipe()
-
-	// Start docker log streaming
-	go func() {
-		defer w.Close()
-		err := bc.containerManager.GetPool().Client.Logs(docker.LogsOptions{
-			Context:      ctx,
-			Container:    res.Container.ID,
-			Follow:       true,
-			Stdout:       true,
-			Stderr:       true,
-			Tail:         "all", // or "200"
-			OutputStream: w,
-			ErrorStream:  w,
-		})
-		if err != nil {
-			bc.t.Logf("[%s] log stream error: %v", prefix, err)
-		}
-	}()
-
-	// Print lines into test logs
-	go func() {
-		scanner := bufio.NewScanner(r)
-		for scanner.Scan() {
-			bc.t.Logf("[%s] %s", prefix, scanner.Text())
-		}
-		if err := scanner.Err(); err != nil {
-			bc.t.Logf("[%s] scanner error: %v", prefix, err)
-		}
-	}()
-}
-
 func (bc *baseConfigurer) runIBCRelayer(chainConfigA *chain.Config, chainConfigB *chain.Config, hermesContainerName string) error {
 	bc.t.Log("starting Hermes relayer 1 container...")
 
@@ -160,21 +123,18 @@ func (bc *baseConfigurer) runIBCRelayer(chainConfigA *chain.Config, chainConfigB
 		filepath.Join("/root/hermes", "mnemonicB.json"),
 		hermesContainerName,
 		hermesCfgPath)
-
 	/* keep commented for debugging in case of failure
 	ctx, cancel := context.WithCancel(context.Background())
 	bc.t.Cleanup(cancel) // stop streaming when test finishes
 	bc.streamContainerLogs(ctx, hermesResource, "hermes")
-	*/
-
-	if err != nil {
+	*/if err != nil {
 		return err
 	}
 
 	endpoint := fmt.Sprintf("http://%s/state", hermesResource.GetHostPort("3031/tcp"))
 
 	require.Eventually(bc.t, func() bool {
-		resp, err := http.Get(endpoint) //nolint
+		resp, err := http.Get(endpoint)
 		if err != nil {
 			return false
 		}

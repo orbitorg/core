@@ -1,13 +1,14 @@
-//nolint:revive
 package v11_1
 
 import (
 	"context"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
+
+	"github.com/cosmos/cosmos-sdk/types/module"
+
 	"github.com/classic-terra/core/v3/app/keepers"
 	"github.com/classic-terra/core/v3/app/upgrades"
-	"github.com/cosmos/cosmos-sdk/types/module"
 )
 
 func CreateV111UpgradeHandler(

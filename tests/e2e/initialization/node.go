@@ -10,12 +10,18 @@ import (
 	"strings"
 	"time"
 
-	sdkmath "cosmossdk.io/math"
+	"github.com/spf13/viper"
+
 	tmconfig "github.com/cometbft/cometbft/config"
 	tmos "github.com/cometbft/cometbft/libs/os"
 	"github.com/cometbft/cometbft/p2p"
 	"github.com/cometbft/cometbft/privval"
 	tmtypes "github.com/cometbft/cometbft/types"
+
+	"github.com/cosmos/go-bip39"
+
+	sdkmath "cosmossdk.io/math"
+
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdkcrypto "github.com/cosmos/cosmos-sdk/crypto"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
@@ -31,8 +37,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/cosmos/go-bip39"
-	"github.com/spf13/viper"
 
 	terraApp "github.com/classic-terra/core/v3/app"
 	"github.com/classic-terra/core/v3/tests/e2e/util"

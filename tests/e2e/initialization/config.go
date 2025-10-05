@@ -6,9 +6,13 @@ import (
 	"path/filepath"
 	"time"
 
-	sdkmath "cosmossdk.io/math"
+	"github.com/gogo/protobuf/proto"
+
 	tmjson "github.com/cometbft/cometbft/libs/json"
 	tmtypes "github.com/cometbft/cometbft/types"
+
+	sdkmath "cosmossdk.io/math"
+
 	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -17,11 +21,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	staketypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/gogo/protobuf/proto"
-
-	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 
 	"github.com/classic-terra/core/v3/tests/e2e/util"
 	taxtypes "github.com/classic-terra/core/v3/x/tax/types"
@@ -81,9 +83,9 @@ var (
 	LunaToken = sdk.NewInt64Coin(TerraDenom, IbcSendAmount) // 3,300luna
 	tenTerra  = sdk.Coins{sdk.NewInt64Coin(TerraDenom, 10_000_000)}
 
-	OneMin      = time.Minute                        // nolint
-	TwoMin      = 2 * time.Minute                    // nolint
-	FiveMin     = 5 * time.Minute                    // nolint
+	OneMin      = time.Minute
+	TwoMin      = 2 * time.Minute
+	FiveMin     = 5 * time.Minute
 	TaxRate     = sdkmath.LegacyZeroDec()            // 0.02
 	BurnTaxRate = sdkmath.LegacyNewDecWithPrec(2, 2) // 0.02
 )

@@ -4,9 +4,10 @@ import (
 	"fmt"
 
 	"cosmossdk.io/log"
-	"github.com/cosmos/cosmos-sdk/codec"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
+
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	accountkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"

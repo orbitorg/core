@@ -1,10 +1,11 @@
 package ante
 
 import (
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authz "github.com/cosmos/cosmos-sdk/x/authz"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 
 	marketexported "github.com/classic-terra/core/v3/x/market/exported"
 	taxtypes "github.com/classic-terra/core/v3/x/tax/types"

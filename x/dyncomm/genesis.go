@@ -2,10 +2,10 @@ package dyncomm
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	"github.com/classic-terra/core/v3/x/dyncomm/keeper"
 	"github.com/classic-terra/core/v3/x/dyncomm/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 // InitGenesis initializes default parameters

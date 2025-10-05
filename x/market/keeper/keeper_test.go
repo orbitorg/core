@@ -5,9 +5,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	core "github.com/classic-terra/core/v3/types"
-
 	sdkmath "cosmossdk.io/math"
+
+	core "github.com/classic-terra/core/v3/types"
 )
 
 func TestTerraPoolDeltaUpdate(t *testing.T) {

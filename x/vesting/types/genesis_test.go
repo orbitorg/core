@@ -3,10 +3,12 @@ package types_test
 import (
 	"testing"
 
-	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/stretchr/testify/require"
 
+	"github.com/cometbft/cometbft/crypto/ed25519"
+
 	sdkmath "cosmossdk.io/math"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	authvesttypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"

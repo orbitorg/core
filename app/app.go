@@ -13,18 +13,21 @@ import (
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/cast"
 
-	appmempool "github.com/classic-terra/core/v3/app/mempool"
+	// unnamed import of statik for swagger UI support
+	_ "github.com/classic-terra/core/v3/client/docs/statik"
+
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmjson "github.com/cometbft/cometbft/libs/json"
-	"github.com/cometbft/cometbft/libs/log"
 	tmos "github.com/cometbft/cometbft/libs/os"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+
 	dbm "github.com/cosmos/cosmos-db"
-	sigtypes "github.com/cosmos/cosmos-sdk/types/tx/signing"
-	txmodule "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
+	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 
 	sdklog "cosmossdk.io/log"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	cmtservice "github.com/cosmos/cosmos-sdk/client/grpc/cmtservice"
@@ -44,15 +47,23 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
-	"github.com/classic-terra/core/v3/app/keepers"
-	terraappparams "github.com/classic-terra/core/v3/app/params"
-	customserver "github.com/classic-terra/core/v3/server"
-	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
-	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
+	"github.com/CosmWasm/wasmd/x/wasm"
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 
+	"github.com/classic-terra/core/v3/app/keepers"
+	appmempool "github.com/classic-terra/core/v3/app/mempool"
+	terraappparams "github.com/classic-terra/core/v3/app/params"
 	// upgrades
 	"github.com/classic-terra/core/v3/app/upgrades"
+	// v9 had been used by tax2gas and has to be skipped
+	v10_1 "github.com/classic-terra/core/v3/app/upgrades/v10_1"
+	v11 "github.com/classic-terra/core/v3/app/upgrades/v11"
+	v11_1 "github.com/classic-terra/core/v3/app/upgrades/v11_1"
 	v11_2 "github.com/classic-terra/core/v3/app/upgrades/v11_2"
+	v12 "github.com/classic-terra/core/v3/app/upgrades/v12"
+	v13 "github.com/classic-terra/core/v3/app/upgrades/v13"
+	v14 "github.com/classic-terra/core/v3/app/upgrades/v14"
 	v2 "github.com/classic-terra/core/v3/app/upgrades/v2"
 	v3 "github.com/classic-terra/core/v3/app/upgrades/v3"
 	v4 "github.com/classic-terra/core/v3/app/upgrades/v4"
@@ -65,41 +76,13 @@ import (
 	v8_1 "github.com/classic-terra/core/v3/app/upgrades/v8_1"
 	v8_2 "github.com/classic-terra/core/v3/app/upgrades/v8_2"
 	v8_3 "github.com/classic-terra/core/v3/app/upgrades/v8_3"
-
-	// v9 had been used by tax2gas and has to be skipped
-	v10_1 "github.com/classic-terra/core/v3/app/upgrades/v10_1"
-	v11 "github.com/classic-terra/core/v3/app/upgrades/v11"
-	v11_1 "github.com/classic-terra/core/v3/app/upgrades/v11_1"
-	v12 "github.com/classic-terra/core/v3/app/upgrades/v12"
-	v13 "github.com/classic-terra/core/v3/app/upgrades/v13"
-	v14 "github.com/classic-terra/core/v3/app/upgrades/v14"
-
 	customante "github.com/classic-terra/core/v3/custom/auth/ante"
 	custompost "github.com/classic-terra/core/v3/custom/auth/post"
 	customauthtx "github.com/classic-terra/core/v3/custom/auth/tx"
-
-	"github.com/CosmWasm/wasmd/x/wasm"
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-
-	// unnamed import of statik for swagger UI support
-	_ "github.com/classic-terra/core/v3/client/docs/statik"
+	customserver "github.com/classic-terra/core/v3/server"
 )
 
 const appName = "TerraApp"
-
-// tmToSdkLogger adapts a CometBFT logger to cosmossdk.io/log.Logger.
-type tmToSdkLogger struct{ tm log.Logger }
-
-func (l tmToSdkLogger) Info(msg string, keyvals ...any)  { l.tm.Info(msg, keyvals...) }
-func (l tmToSdkLogger) Error(msg string, keyvals ...any) { l.tm.Error(msg, keyvals...) }
-func (l tmToSdkLogger) Warn(msg string, keyvals ...any)  { l.tm.Info("WARN: "+msg, keyvals...) }
-func (l tmToSdkLogger) Debug(msg string, keyvals ...any) { l.tm.Debug(msg, keyvals...) }
-func (l tmToSdkLogger) With(keyvals ...any) sdklog.Logger {
-	return tmToSdkLogger{tm: l.tm.With(keyvals...)}
-}
-
-func (l tmToSdkLogger) Impl() interface{} { return l.tm }
 
 var (
 	// DefaultNodeHome defines default home directories for terrad
@@ -240,21 +223,6 @@ func NewTerraApp(
 	// must be passed by reference here.
 	app.mm = module.NewManager(appModules(app, encodingConfig, skipGenesisInvariants)...)
 
-	enabledSignModes := append([]sigtypes.SignMode(nil), authtx.DefaultSignModes...)
-	enabledSignModes = append(enabledSignModes, sigtypes.SignMode_SIGN_MODE_TEXTUAL)
-
-	txConfigOpts := authtx.ConfigOptions{
-		EnabledSignModes:           enabledSignModes,
-		TextualCoinMetadataQueryFn: txmodule.NewBankKeeperCoinMetadataQueryFn(app.BankKeeper),
-	}
-	txConfig, err := authtx.NewTxConfigWithOptions(
-		appCodec,
-		txConfigOpts,
-	)
-	if err != nil {
-		panic(err)
-	}
-	app.txConfig = txConfig
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
@@ -279,7 +247,7 @@ func NewTerraApp(
 	// NOTE: PreBlocker is supported in SDK v0.50; if needed, enable via BaseApp.SetPreBlocker.
 
 	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
-	err = app.mm.RegisterServices(app.configurator)
+	err := app.mm.RegisterServices(app.configurator)
 	if err != nil {
 		panic(err)
 	}

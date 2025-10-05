@@ -4,8 +4,33 @@ import (
 	"testing"
 	"time"
 
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/stretchr/testify/require"
+
+	"github.com/cometbft/cometbft/crypto"
+	"github.com/cometbft/cometbft/crypto/secp256k1"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+
+	dbm "github.com/cosmos/cosmos-db"
+
+	sdklog "cosmossdk.io/log"
+	store "cosmossdk.io/store"
+	storemetrics "cosmossdk.io/store/metrics"
+	storetypes "cosmossdk.io/store/types"
+
+	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/codec/address"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/runtime"
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/module"
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
+	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 
 	customauth "github.com/classic-terra/core/v3/custom/auth"
 	custombank "github.com/classic-terra/core/v3/custom/bank"
@@ -16,28 +41,6 @@ import (
 	"github.com/classic-terra/core/v3/x/market"
 	"github.com/classic-terra/core/v3/x/oracle"
 	"github.com/classic-terra/core/v3/x/taxexemption/types"
-	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-
-	"github.com/cometbft/cometbft/crypto"
-	"github.com/cometbft/cometbft/crypto/secp256k1"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	dbm "github.com/cosmos/cosmos-db"
-
-	sdklog "cosmossdk.io/log"
-	store "cosmossdk.io/store"
-	storemetrics "cosmossdk.io/store/metrics"
-	storetypes "cosmossdk.io/store/types"
-	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/codec/address"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/cosmos/cosmos-sdk/runtime"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/module"
-	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 )
 
 var ModuleBasics = module.NewBasicManager(
@@ -49,10 +52,6 @@ var ModuleBasics = module.NewBasicManager(
 	oracle.AppModuleBasic{},
 	market.AppModuleBasic{},
 )
-
-func MakeTestCodec(t *testing.T) codec.Codec {
-	return MakeEncodingConfig(t).Codec
-}
 
 type EncodingConfig struct {
 	InterfaceRegistry codectypes.InterfaceRegistry

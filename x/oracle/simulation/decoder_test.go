@@ -9,8 +9,9 @@ import (
 
 	"github.com/cometbft/cometbft/crypto/ed25519"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkmath "cosmossdk.io/math"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/kv"
 
 	core "github.com/classic-terra/core/v3/types"

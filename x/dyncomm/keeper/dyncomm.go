@@ -2,9 +2,11 @@ package keeper
 
 import (
 	"cosmossdk.io/math"
-	types "github.com/classic-terra/core/v3/x/dyncomm/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+
+	types "github.com/classic-terra/core/v3/x/dyncomm/types"
 )
 
 // GetVotingPower calculates the voting power of a validator in percent

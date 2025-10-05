@@ -5,8 +5,10 @@ import (
 
 	"cosmossdk.io/math"
 	sdkmath "cosmossdk.io/math"
-	oracletypes "github.com/classic-terra/core/v3/x/oracle/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	oracletypes "github.com/classic-terra/core/v3/x/oracle/types"
 )
 
 // AccountKeeper expected account keeper

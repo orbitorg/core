@@ -2,6 +2,7 @@ package feegrant
 
 import (
 	feegrant "cosmossdk.io/x/feegrant/module"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/module"
 

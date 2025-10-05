@@ -3,11 +3,13 @@ package handlers
 import (
 	"context"
 
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+
 	taxkeeper "github.com/classic-terra/core/v3/x/tax/keeper"
 	treasurykeeper "github.com/classic-terra/core/v3/x/treasury/keeper"
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 )
 
 // THIS FILE IS NOT USED CURRENTLY IN THE TAX MODULE

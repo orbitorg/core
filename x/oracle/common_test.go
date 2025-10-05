@@ -5,13 +5,14 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/classic-terra/core/v3/x/oracle/keeper"
-	"github.com/classic-terra/core/v3/x/oracle/types"
+	sdkmath "cosmossdk.io/math"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	sdkmath "cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/classic-terra/core/v3/x/oracle/keeper"
+	"github.com/classic-terra/core/v3/x/oracle/types"
 )
 
 var (

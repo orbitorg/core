@@ -6,13 +6,15 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/cometbft/cometbft/libs/rand"
 	"github.com/stretchr/testify/require"
+
+	"github.com/cometbft/cometbft/libs/rand"
+
+	sdkmath "cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	sdkmath "cosmossdk.io/math"
 	core "github.com/classic-terra/core/v3/types"
 	"github.com/classic-terra/core/v3/x/oracle"
 	"github.com/classic-terra/core/v3/x/oracle/keeper"

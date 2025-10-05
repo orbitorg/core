@@ -5,10 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/classic-terra/core/v3/x/treasury/keeper"
-	"github.com/classic-terra/core/v3/x/treasury/simulation"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-
 	"github.com/spf13/cobra"
 
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -21,6 +18,8 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 
 	"github.com/classic-terra/core/v3/x/treasury/client/cli"
+	"github.com/classic-terra/core/v3/x/treasury/keeper"
+	"github.com/classic-terra/core/v3/x/treasury/simulation"
 	"github.com/classic-terra/core/v3/x/treasury/types"
 )
 

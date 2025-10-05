@@ -8,6 +8,7 @@ import (
 	"math/rand"
 
 	"cosmossdk.io/math"
+
 	"github.com/cosmos/cosmos-sdk/types/module"
 
 	"github.com/classic-terra/core/v3/x/market/types"

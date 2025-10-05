@@ -7,16 +7,18 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
-	"github.com/classic-terra/core/v3/app/helper"
-	taxkeeper "github.com/classic-terra/core/v3/x/tax/keeper"
-	taxtypes "github.com/classic-terra/core/v3/x/tax/types"
-	taxexemptionkeeper "github.com/classic-terra/core/v3/x/taxexemption/keeper"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
+
+	"github.com/classic-terra/core/v3/app/helper"
+	taxkeeper "github.com/classic-terra/core/v3/x/tax/keeper"
+	taxtypes "github.com/classic-terra/core/v3/x/tax/types"
+	taxexemptionkeeper "github.com/classic-terra/core/v3/x/taxexemption/keeper"
 )
 
 // FeeDecorator deducts fees from the first signer of the tx
@@ -104,7 +106,7 @@ func (fd FeeDecorator) checkDeductFee(ctx sdk.Context, feeTx sdk.FeeTx, taxes sd
 	fee := feeTx.GetFee()
 	feePayer := feeTx.FeePayer()
 	feeGranter := feeTx.FeeGranter()
-	
+
 	// SDK 0.50 fix: if no fee payer is set, default to first signer
 	if len(feePayer) == 0 {
 		if sigTx, ok := feeTx.(authsigning.SigVerifiableTx); ok {
@@ -120,7 +122,7 @@ func (fd FeeDecorator) checkDeductFee(ctx sdk.Context, feeTx sdk.FeeTx, taxes sd
 			return ctx, fmt.Errorf("fee payer address not found and cannot cast to SigVerifiableTx")
 		}
 	}
-	
+
 	deductFeesFrom := feePayer
 
 	// if feegranter set deduct fee from feegranter account.

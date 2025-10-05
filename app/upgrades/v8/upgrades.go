@@ -3,11 +3,10 @@ package v8
 import (
 	"context"
 
+	"github.com/cosmos/ibc-go/v10/modules/core/exported"
+
 	upgradetypes "cosmossdk.io/x/upgrade/types"
-	wasmmigration "github.com/CosmWasm/wasmd/x/wasm/migrations/v2"
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	"github.com/classic-terra/core/v3/app/keepers"
-	"github.com/classic-terra/core/v3/app/upgrades"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -21,7 +20,12 @@ import (
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/cosmos/ibc-go/v10/modules/core/exported"
+
+	wasmmigration "github.com/CosmWasm/wasmd/x/wasm/migrations/v2"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+
+	"github.com/classic-terra/core/v3/app/keepers"
+	"github.com/classic-terra/core/v3/app/upgrades"
 )
 
 func CreateV8UpgradeHandler(

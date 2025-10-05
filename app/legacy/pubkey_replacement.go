@@ -7,9 +7,10 @@ import (
 	"log"
 	"os"
 
+	"github.com/pkg/errors"
+
 	cryptocodec "github.com/cometbft/cometbft/crypto/encoding"
 	tmtypes "github.com/cometbft/cometbft/types"
-	"github.com/pkg/errors"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"

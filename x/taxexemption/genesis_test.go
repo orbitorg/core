@@ -4,10 +4,11 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	taxexemption "github.com/classic-terra/core/v3/x/taxexemption"
 	util "github.com/classic-terra/core/v3/x/taxexemption/keeper"
 	"github.com/classic-terra/core/v3/x/taxexemption/types"
-	"github.com/stretchr/testify/require"
 )
 
 func TestDefaultGenesisState(t *testing.T) {

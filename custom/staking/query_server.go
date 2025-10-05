@@ -4,12 +4,14 @@ import (
 	"context"
 
 	"cosmossdk.io/math"
-	legacytypes "github.com/classic-terra/core/v3/custom/staking/types"
-	legacyupgrade "github.com/classic-terra/core/v3/custom/upgrade/legacy"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+
+	legacytypes "github.com/classic-terra/core/v3/custom/staking/types"
+	legacyupgrade "github.com/classic-terra/core/v3/custom/upgrade/legacy"
 )
 
 // LegacyQueryServer wraps the staking QueryServer and sets legacy parameters for pre-upgrade height queries

@@ -3,6 +3,7 @@ package types
 import (
 	"cosmossdk.io/math"
 	sdkmath "cosmossdk.io/math"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 

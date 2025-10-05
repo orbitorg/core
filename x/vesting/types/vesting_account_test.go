@@ -5,12 +5,13 @@ import (
 	"testing"
 	"time"
 
-	tmtime "github.com/cometbft/cometbft/types/time"
 	"github.com/stretchr/testify/require"
 
-	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
+	tmtime "github.com/cometbft/cometbft/types/time"
 
 	sdkmath "cosmossdk.io/math"
+
+	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	authvestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"

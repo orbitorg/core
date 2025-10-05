@@ -3,8 +3,9 @@ package cli
 import (
 	"fmt"
 
-	"cosmossdk.io/math"
 	"github.com/spf13/cobra"
+
+	"cosmossdk.io/math"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"

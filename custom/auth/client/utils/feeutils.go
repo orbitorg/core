@@ -3,15 +3,15 @@ package utils
 import (
 	"context"
 
-	"cosmossdk.io/math"
 	"github.com/spf13/pflag"
+
+	"cosmossdk.io/math"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/migrations/legacytx"
 	"github.com/cosmos/cosmos-sdk/x/authz"
-
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	marketexported "github.com/classic-terra/core/v3/x/market/exported"

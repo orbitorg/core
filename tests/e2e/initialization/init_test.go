@@ -7,8 +7,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/classic-terra/core/v3/tests/e2e/initialization"
 	"github.com/stretchr/testify/require"
+
+	"github.com/classic-terra/core/v3/tests/e2e/initialization"
 )
 
 const forkHeight = 10

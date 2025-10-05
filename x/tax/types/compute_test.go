@@ -3,10 +3,12 @@ package types
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	cosmosmath "cosmossdk.io/math"
 	sdkmath "cosmossdk.io/math"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/require"
 )
 
 // mockCaps implements TaxCapProvider for tests.
