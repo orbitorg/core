@@ -2,7 +2,6 @@ package v2
 
 import (
 	store "cosmossdk.io/store/types"
-
 	"github.com/classic-terra/core/v3/app/upgrades"
 )
 

@@ -1,16 +1,13 @@
 package ante_test
 
 import (
-	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
-
 	sdkmath "cosmossdk.io/math"
-
+	"github.com/classic-terra/core/v3/custom/auth/ante"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	"github.com/classic-terra/core/v3/custom/auth/ante"
+	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 )
 
 func (suite *AnteTestSuite) TestIBCTransferSpamPrevention() {

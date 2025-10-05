@@ -8,14 +8,12 @@ import (
 	"math/rand"
 
 	"cosmossdk.io/math"
-
+	core "github.com/classic-terra/core/v3/types"
+	customvestingtypes "github.com/classic-terra/core/v3/x/vesting/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
-
-	core "github.com/classic-terra/core/v3/types"
-	customvestingtypes "github.com/classic-terra/core/v3/x/vesting/types"
 )
 
 // Simulation parameter constants

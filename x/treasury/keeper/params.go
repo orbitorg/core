@@ -2,10 +2,8 @@ package keeper
 
 import (
 	sdkmath "cosmossdk.io/math"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	"github.com/classic-terra/core/v3/x/treasury/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // TaxPolicy defines constraints for TaxRate

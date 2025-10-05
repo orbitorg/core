@@ -2,7 +2,6 @@ package bindings
 
 import (
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v3/types"
-
 	markettypes "github.com/classic-terra/core/v3/x/market/types"
 	treasurytypes "github.com/classic-terra/core/v3/x/treasury/types"
 )

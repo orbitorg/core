@@ -1,9 +1,8 @@
 package client
 
 import (
-	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
-
 	"github.com/classic-terra/core/v3/x/treasury/client/cli"
+	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 )
 
 // should we support legacy rest?

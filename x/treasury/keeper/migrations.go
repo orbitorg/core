@@ -1,9 +1,8 @@
 package keeper
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	"github.com/classic-terra/core/v3/x/treasury/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var burnTaxExcemptionAddressList = []string{

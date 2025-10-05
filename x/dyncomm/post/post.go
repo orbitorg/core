@@ -1,10 +1,9 @@
 package post
 
 import (
+	dyncommkeeper "github.com/classic-terra/core/v3/x/dyncomm/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-
-	dyncommkeeper "github.com/classic-terra/core/v3/x/dyncomm/keeper"
 )
 
 // DyncommDecorator does post runMsg store

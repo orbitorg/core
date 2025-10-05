@@ -3,25 +3,19 @@ package v13_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
-
-	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
-
-	dbm "github.com/cosmos/cosmos-db"
-
 	sdklog "cosmossdk.io/log"
 	store "cosmossdk.io/store"
 	storemetrics "cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-
 	apptesting "github.com/classic-terra/core/v3/app/testing"
 	v13 "github.com/classic-terra/core/v3/app/upgrades/v13"
+	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	dbm "github.com/cosmos/cosmos-db"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
 type ComprehensiveMigrationTestSuite struct {

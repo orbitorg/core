@@ -6,7 +6,15 @@ import (
 	"time"
 
 	sdkmath "cosmossdk.io/math"
-
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	"github.com/classic-terra/core/v3/custom/auth/ante"
+	core "github.com/classic-terra/core/v3/types"
+	markettypes "github.com/classic-terra/core/v3/x/market/types"
+	oracletypes "github.com/classic-terra/core/v3/x/oracle/types"
+	"github.com/classic-terra/core/v3/x/tax/post"
+	taxtypes "github.com/classic-terra/core/v3/x/tax/types"
+	"github.com/classic-terra/core/v3/x/taxexemption/types"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -16,17 +24,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank/testutil"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-
-	"github.com/classic-terra/core/v3/custom/auth/ante"
-	core "github.com/classic-terra/core/v3/types"
-	markettypes "github.com/classic-terra/core/v3/x/market/types"
-	oracletypes "github.com/classic-terra/core/v3/x/oracle/types"
-	"github.com/classic-terra/core/v3/x/tax/post"
-	taxtypes "github.com/classic-terra/core/v3/x/tax/types"
-	"github.com/classic-terra/core/v3/x/taxexemption/types"
 )
 
 func (s *AnteTestSuite) TestDeductFeeDecorator_ZeroGas() {

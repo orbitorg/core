@@ -1,11 +1,9 @@
 package v5
 
 import (
-	icacontrollertypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/types"
-
 	store "cosmossdk.io/store/types"
-
 	"github.com/classic-terra/core/v3/app/upgrades"
+	icacontrollertypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/types"
 )
 
 const UpgradeName = "v5"

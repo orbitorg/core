@@ -2,7 +2,6 @@ package v6
 
 import (
 	store "cosmossdk.io/store/types"
-
 	"github.com/classic-terra/core/v3/app/upgrades"
 	dyncommtypes "github.com/classic-terra/core/v3/x/dyncomm/types"
 )

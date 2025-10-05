@@ -4,15 +4,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pkg/errors"
-	"github.com/spf13/cobra"
-
+	"github.com/classic-terra/core/v3/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	"github.com/classic-terra/core/v3/x/oracle/types"
+	"github.com/pkg/errors"
+	"github.com/spf13/cobra"
 )
 
 // GetTxCmd returns the transaction commands for this module

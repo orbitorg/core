@@ -4,19 +4,24 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
-
-	"github.com/cometbft/cometbft/crypto"
-	"github.com/cometbft/cometbft/crypto/secp256k1"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-
-	dbm "github.com/cosmos/cosmos-db"
-
 	sdklog "cosmossdk.io/log"
 	store "cosmossdk.io/store"
 	storemetrics "cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
-
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	customauth "github.com/classic-terra/core/v3/custom/auth"
+	custombank "github.com/classic-terra/core/v3/custom/bank"
+	customdistr "github.com/classic-terra/core/v3/custom/distribution"
+	customparams "github.com/classic-terra/core/v3/custom/params"
+	customstaking "github.com/classic-terra/core/v3/custom/staking"
+	core "github.com/classic-terra/core/v3/types"
+	"github.com/classic-terra/core/v3/x/market"
+	"github.com/classic-terra/core/v3/x/oracle"
+	"github.com/classic-terra/core/v3/x/taxexemption/types"
+	"github.com/cometbft/cometbft/crypto"
+	"github.com/cometbft/cometbft/crypto/secp256k1"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -29,18 +34,7 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-
-	customauth "github.com/classic-terra/core/v3/custom/auth"
-	custombank "github.com/classic-terra/core/v3/custom/bank"
-	customdistr "github.com/classic-terra/core/v3/custom/distribution"
-	customparams "github.com/classic-terra/core/v3/custom/params"
-	customstaking "github.com/classic-terra/core/v3/custom/staking"
-	core "github.com/classic-terra/core/v3/types"
-	"github.com/classic-terra/core/v3/x/market"
-	"github.com/classic-terra/core/v3/x/oracle"
-	"github.com/classic-terra/core/v3/x/taxexemption/types"
+	"github.com/stretchr/testify/require"
 )
 
 var ModuleBasics = module.NewBasicManager(

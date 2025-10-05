@@ -2,10 +2,8 @@ package keeper
 
 import (
 	"cosmossdk.io/math"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	"github.com/classic-terra/core/v3/x/dyncomm/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (k Keeper) GetMaxZero(ctx sdk.Context) (ret math.LegacyDec) {

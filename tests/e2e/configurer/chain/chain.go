@@ -6,13 +6,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
-
-	coretypes "github.com/cometbft/cometbft/rpc/core/types"
-
 	"github.com/classic-terra/core/v3/tests/e2e/configurer/config"
 	"github.com/classic-terra/core/v3/tests/e2e/containers"
 	"github.com/classic-terra/core/v3/tests/e2e/initialization"
+	coretypes "github.com/cometbft/cometbft/rpc/core/types"
+	"github.com/stretchr/testify/require"
 )
 
 const StatusPassed = "PROPOSAL_STATUS_PASSED"

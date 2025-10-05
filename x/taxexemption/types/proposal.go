@@ -4,7 +4,6 @@ import (
 	fmt "fmt"
 
 	"cosmossdk.io/errors"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 )

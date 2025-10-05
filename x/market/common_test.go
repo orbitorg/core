@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	sdkmath "cosmossdk.io/math"
-
 	core "github.com/classic-terra/core/v3/types"
 	"github.com/classic-terra/core/v3/x/market/keeper"
 	"github.com/classic-terra/core/v3/x/market/types"

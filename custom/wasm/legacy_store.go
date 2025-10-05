@@ -6,10 +6,8 @@ import (
 	"io"
 
 	storetypes "cosmossdk.io/store/types"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	coretypes "github.com/classic-terra/core/v3/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 const (

@@ -1,16 +1,15 @@
 package market
 
 import (
-	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/cosmos/cosmos-sdk/types/simulation"
-
 	"github.com/classic-terra/core/v3/x/market"
 	"github.com/classic-terra/core/v3/x/market/keeper"
 	"github.com/classic-terra/core/v3/x/market/types"
 	"github.com/classic-terra/core/v3/x/tax/handlers"
 	taxkeeper "github.com/classic-terra/core/v3/x/tax/keeper"
 	treasurykeeper "github.com/classic-terra/core/v3/x/treasury/keeper"
+	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/types/module"
+	"github.com/cosmos/cosmos-sdk/types/simulation"
 )
 
 var (

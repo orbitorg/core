@@ -7,19 +7,21 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
-
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-
-	dbm "github.com/cosmos/cosmos-db"
-
 	"cosmossdk.io/log"
 	"cosmossdk.io/math"
 	sdkmath "cosmossdk.io/math"
 	store "cosmossdk.io/store"
 	storemetrics "cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
-
+	customauth "github.com/classic-terra/core/v3/custom/auth"
+	custombank "github.com/classic-terra/core/v3/custom/bank"
+	customdistr "github.com/classic-terra/core/v3/custom/distribution"
+	customparams "github.com/classic-terra/core/v3/custom/params"
+	customstaking "github.com/classic-terra/core/v3/custom/staking"
+	core "github.com/classic-terra/core/v3/types"
+	types "github.com/classic-terra/core/v3/x/dyncomm/types"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -41,14 +43,7 @@ import (
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-
-	customauth "github.com/classic-terra/core/v3/custom/auth"
-	custombank "github.com/classic-terra/core/v3/custom/bank"
-	customdistr "github.com/classic-terra/core/v3/custom/distribution"
-	customparams "github.com/classic-terra/core/v3/custom/params"
-	customstaking "github.com/classic-terra/core/v3/custom/staking"
-	core "github.com/classic-terra/core/v3/types"
-	types "github.com/classic-terra/core/v3/x/dyncomm/types"
+	"github.com/stretchr/testify/require"
 )
 
 const faucetAccountName = "faucet"

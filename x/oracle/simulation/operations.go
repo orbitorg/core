@@ -7,7 +7,9 @@ import (
 	"strings"
 
 	"cosmossdk.io/math"
-
+	core "github.com/classic-terra/core/v3/types"
+	"github.com/classic-terra/core/v3/x/oracle/keeper"
+	"github.com/classic-terra/core/v3/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -19,10 +21,6 @@ import (
 	banksim "github.com/cosmos/cosmos-sdk/x/bank/simulation"
 	distrsim "github.com/cosmos/cosmos-sdk/x/distribution/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
-
-	core "github.com/classic-terra/core/v3/types"
-	"github.com/classic-terra/core/v3/x/oracle/keeper"
-	"github.com/classic-terra/core/v3/x/oracle/types"
 )
 
 // Simulation operation weights constants

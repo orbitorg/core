@@ -2,7 +2,6 @@ package types
 
 import (
 	"cosmossdk.io/x/feegrant"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/legacy"
 )

@@ -1,23 +1,19 @@
 package wasm
 
 import (
-	"github.com/spf13/cobra"
-
 	storetypes "cosmossdk.io/store/types"
-
+	"github.com/CosmWasm/wasmd/x/wasm"
+	"github.com/CosmWasm/wasmd/x/wasm/keeper"
+	"github.com/CosmWasm/wasmd/x/wasm/simulation"
+	types "github.com/CosmWasm/wasmd/x/wasm/types"
+	customcli "github.com/classic-terra/core/v3/custom/wasm/client/cli"
+	customtypes "github.com/classic-terra/core/v3/custom/wasm/types/legacy"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-
-	"github.com/CosmWasm/wasmd/x/wasm"
-	"github.com/CosmWasm/wasmd/x/wasm/keeper"
-	"github.com/CosmWasm/wasmd/x/wasm/simulation"
-	types "github.com/CosmWasm/wasmd/x/wasm/types"
-
-	customcli "github.com/classic-terra/core/v3/custom/wasm/client/cli"
-	customtypes "github.com/classic-terra/core/v3/custom/wasm/types/legacy"
+	"github.com/spf13/cobra"
 )
 
 var _ module.AppModuleBasic = AppModuleBasic{}

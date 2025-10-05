@@ -3,12 +3,11 @@ package handlers
 import (
 	"context"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	marketkeeper "github.com/classic-terra/core/v3/x/market/keeper"
 	markettypes "github.com/classic-terra/core/v3/x/market/types"
 	taxkeeper "github.com/classic-terra/core/v3/x/tax/keeper"
 	treasurykeeper "github.com/classic-terra/core/v3/x/treasury/keeper"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type MarketMsgServer struct {

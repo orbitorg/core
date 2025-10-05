@@ -8,13 +8,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
-
-	rpchttp "github.com/cometbft/cometbft/rpc/client/http"
-	coretypes "github.com/cometbft/cometbft/rpc/core/types"
-
 	"github.com/classic-terra/core/v3/tests/e2e/containers"
 	"github.com/classic-terra/core/v3/tests/e2e/initialization"
+	rpchttp "github.com/cometbft/cometbft/rpc/client/http"
+	coretypes "github.com/cometbft/cometbft/rpc/core/types"
+	"github.com/stretchr/testify/require"
 )
 
 type NodeConfig struct {

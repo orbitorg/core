@@ -5,12 +5,10 @@ import (
 	"sync"
 
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v3/types"
-
-	"github.com/cosmos/cosmos-sdk/codec"
-
 	markettypes "github.com/classic-terra/core/v3/x/market/types"
 	oracletypes "github.com/classic-terra/core/v3/x/oracle/types"
 	treasurytypes "github.com/classic-terra/core/v3/x/treasury/types"
+	"github.com/cosmos/cosmos-sdk/codec"
 )
 
 // stargateWhitelist keeps whitelist and its deterministic

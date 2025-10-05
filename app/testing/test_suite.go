@@ -6,18 +6,22 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
-
+	sdklog "cosmossdk.io/log"
+	sdkmath "cosmossdk.io/math"
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	"github.com/classic-terra/core/v3/app"
+	appparams "github.com/classic-terra/core/v3/app/params"
+	core "github.com/classic-terra/core/v3/types"
+	dyncommtypes "github.com/classic-terra/core/v3/x/dyncomm/types"
+	markettypes "github.com/classic-terra/core/v3/x/market/types"
+	oracletypes "github.com/classic-terra/core/v3/x/oracle/types"
+	taxtypes "github.com/classic-terra/core/v3/x/tax/types"
+	treasurytypes "github.com/classic-terra/core/v3/x/treasury/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	tmtypes "github.com/cometbft/cometbft/types"
-
 	dbm "github.com/cosmos/cosmos-db"
-
-	sdklog "cosmossdk.io/log"
-	sdkmath "cosmossdk.io/math"
-
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
@@ -34,18 +38,8 @@ import (
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-
-	"github.com/classic-terra/core/v3/app"
-	appparams "github.com/classic-terra/core/v3/app/params"
-	core "github.com/classic-terra/core/v3/types"
-	dyncommtypes "github.com/classic-terra/core/v3/x/dyncomm/types"
-	markettypes "github.com/classic-terra/core/v3/x/market/types"
-	oracletypes "github.com/classic-terra/core/v3/x/oracle/types"
-	taxtypes "github.com/classic-terra/core/v3/x/tax/types"
-	treasurytypes "github.com/classic-terra/core/v3/x/treasury/types"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
 // SimAppChainID hardcoded chainID for simulation

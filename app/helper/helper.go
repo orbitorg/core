@@ -1,9 +1,8 @@
 package helper
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	oracleexported "github.com/classic-terra/core/v3/x/oracle/exported"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func IsOracleTx(msgs []sdk.Msg) bool {

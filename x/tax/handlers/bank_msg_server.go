@@ -3,13 +3,12 @@ package handlers
 import (
 	"context"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-
 	taxkeeper "github.com/classic-terra/core/v3/x/tax/keeper"
 	taxexemptionkeeper "github.com/classic-terra/core/v3/x/taxexemption/keeper"
 	treasurykeeper "github.com/classic-terra/core/v3/x/treasury/keeper"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
 type BankMsgServer struct {

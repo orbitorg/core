@@ -5,10 +5,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	grpctypes "github.com/cosmos/cosmos-sdk/types/grpc"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
-
-	grpctypes "github.com/cosmos/cosmos-sdk/types/grpc"
 )
 
 // Dummy handler for testing

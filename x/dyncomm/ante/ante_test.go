@@ -6,17 +6,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/suite"
-
-	abci "github.com/cometbft/cometbft/abci/types"
-
-	"github.com/cosmos/gogoproto/proto"
-	icatypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/types"
-	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
-
 	sdkmath "cosmossdk.io/math"
-
+	"github.com/classic-terra/core/v3/app"
+	appparams "github.com/classic-terra/core/v3/app/params"
+	apptesting "github.com/classic-terra/core/v3/app/testing"
+	core "github.com/classic-terra/core/v3/types"
+	dyncommante "github.com/classic-terra/core/v3/x/dyncomm/ante"
+	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -27,12 +23,11 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	authz "github.com/cosmos/cosmos-sdk/x/authz"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-
-	"github.com/classic-terra/core/v3/app"
-	appparams "github.com/classic-terra/core/v3/app/params"
-	apptesting "github.com/classic-terra/core/v3/app/testing"
-	core "github.com/classic-terra/core/v3/types"
-	dyncommante "github.com/classic-terra/core/v3/x/dyncomm/ante"
+	"github.com/cosmos/gogoproto/proto"
+	icatypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/types"
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	"github.com/stretchr/testify/suite"
 )
 
 // AnteTestSuite is a test suite to be used with ante handler tests.

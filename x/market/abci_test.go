@@ -3,11 +3,9 @@ package market
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	sdkmath "cosmossdk.io/math"
-
 	"github.com/classic-terra/core/v3/x/market/keeper"
+	"github.com/stretchr/testify/require"
 )
 
 func TestReplenishPools(t *testing.T) {

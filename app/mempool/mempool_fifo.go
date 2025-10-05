@@ -5,14 +5,12 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/classic-terra/core/v3/app/helper"
 	"github.com/cometbft/cometbft/libs/clist"
 	cmtsync "github.com/cometbft/cometbft/libs/sync"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/mempool"
 	"github.com/cosmos/cosmos-sdk/x/auth/signing"
-
-	"github.com/classic-terra/core/v3/app/helper"
 )
 
 var (

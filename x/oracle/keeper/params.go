@@ -2,10 +2,8 @@ package keeper
 
 import (
 	"cosmossdk.io/math"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	"github.com/classic-terra/core/v3/x/oracle/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // VotePeriod returns the number of blocks during which voting takes place.

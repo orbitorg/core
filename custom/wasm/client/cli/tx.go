@@ -7,19 +7,16 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/spf13/cobra"
-	flag "github.com/spf13/pflag"
-
+	"github.com/CosmWasm/wasmd/x/wasm/client/cli"
+	"github.com/CosmWasm/wasmd/x/wasm/types"
+	feeutils "github.com/classic-terra/core/v3/custom/auth/client/utils"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
-
-	"github.com/CosmWasm/wasmd/x/wasm/client/cli"
-	"github.com/CosmWasm/wasmd/x/wasm/types"
-
-	feeutils "github.com/classic-terra/core/v3/custom/auth/client/utils"
+	"github.com/spf13/cobra"
+	flag "github.com/spf13/pflag"
 )
 
 const (

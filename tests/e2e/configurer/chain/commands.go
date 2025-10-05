@@ -9,22 +9,18 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/stretchr/testify/require"
-
+	sdkmath "cosmossdk.io/math"
+	app "github.com/classic-terra/core/v3/app"
+	"github.com/classic-terra/core/v3/tests/e2e/initialization"
+	"github.com/classic-terra/core/v3/types/assets"
 	"github.com/cometbft/cometbft/libs/bytes"
 	"github.com/cometbft/cometbft/p2p"
 	coretypes "github.com/cometbft/cometbft/rpc/core/types"
-
-	sdkmath "cosmossdk.io/math"
-
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-
-	app "github.com/classic-terra/core/v3/app"
-	"github.com/classic-terra/core/v3/tests/e2e/initialization"
-	"github.com/classic-terra/core/v3/types/assets"
+	"github.com/stretchr/testify/require"
 )
 
 func (n *NodeConfig) StoreWasmCode(wasmFile, from string) {

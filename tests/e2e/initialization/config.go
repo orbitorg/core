@@ -6,13 +6,12 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/gogo/protobuf/proto"
-
+	sdkmath "cosmossdk.io/math"
+	"github.com/classic-terra/core/v3/tests/e2e/util"
+	taxtypes "github.com/classic-terra/core/v3/x/tax/types"
+	treasurytypes "github.com/classic-terra/core/v3/x/treasury/types"
 	tmjson "github.com/cometbft/cometbft/libs/json"
 	tmtypes "github.com/cometbft/cometbft/types"
-
-	sdkmath "cosmossdk.io/math"
-
 	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -24,10 +23,7 @@ import (
 	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	staketypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-
-	"github.com/classic-terra/core/v3/tests/e2e/util"
-	taxtypes "github.com/classic-terra/core/v3/x/tax/types"
-	treasurytypes "github.com/classic-terra/core/v3/x/treasury/types"
+	"github.com/gogo/protobuf/proto"
 )
 
 // NodeConfig is a confiuration for the node supplied from the test runner

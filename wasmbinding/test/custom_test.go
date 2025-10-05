@@ -1,9 +1,8 @@
 package wasmbinding_test
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	"github.com/classic-terra/core/v3/wasmbinding/bindings"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 const (

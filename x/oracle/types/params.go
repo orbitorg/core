@@ -3,13 +3,10 @@ package types
 import (
 	"fmt"
 
-	"gopkg.in/yaml.v2"
-
 	"cosmossdk.io/math"
-
-	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-
 	core "github.com/classic-terra/core/v3/types"
+	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	"gopkg.in/yaml.v2"
 )
 
 // Parameter keys

@@ -3,16 +3,13 @@ package forks
 import (
 	"fmt"
 
-	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
-	ibcchanneltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
-
 	sdkmath "cosmossdk.io/math"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/module"
-
 	"github.com/classic-terra/core/v3/app/keepers"
 	core "github.com/classic-terra/core/v3/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/module"
+	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	ibcchanneltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 )
 
 func runForkLogicSwapDisable(ctx sdk.Context, keppers *keepers.AppKeepers, _ *module.Manager) {

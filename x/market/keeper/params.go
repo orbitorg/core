@@ -2,10 +2,8 @@ package keeper
 
 import (
 	"cosmossdk.io/math"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	"github.com/classic-terra/core/v3/x/market/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // BasePool is liquidity pool(usdr unit) which will be made available per PoolRecoveryPeriod

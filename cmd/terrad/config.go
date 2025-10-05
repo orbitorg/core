@@ -3,10 +3,9 @@ package main
 import (
 	"fmt"
 
-	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
-
 	//	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 )
 
 const (

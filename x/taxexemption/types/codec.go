@@ -1,6 +1,7 @@
 package types
 
 import (
+	govamino "github.com/classic-terra/core/v3/custom/gov/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/legacy"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -8,8 +9,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
-
-	govamino "github.com/classic-terra/core/v3/custom/gov/types"
 )
 
 // RegisterInterfaces associates protoName with the new message types

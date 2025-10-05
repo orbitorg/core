@@ -6,21 +6,17 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-
 	log "cosmossdk.io/log"
-
+	"github.com/classic-terra/core/v3/app/helper"
+	appmempool "github.com/classic-terra/core/v3/app/mempool"
+	oracleexported "github.com/classic-terra/core/v3/x/oracle/exported"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/mempool"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-
-	"github.com/classic-terra/core/v3/app/helper"
-	appmempool "github.com/classic-terra/core/v3/app/mempool"
-	oracleexported "github.com/classic-terra/core/v3/x/oracle/exported"
+	"github.com/stretchr/testify/require"
 )
 
 func (s *MempoolTestSuite) TestTxOrder() {

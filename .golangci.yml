@@ -27,33 +27,6 @@ linters:
       require-explanation: false
       require-specific: false
       allow-unused: false
-    revive:
-      severity: warning
-      rules:
-        - name: unused-parameter
-          disabled: true
-        - name: blank-imports
-        - name: context-as-argument
-        - name: context-keys-type
-        - name: dot-imports
-        - name: error-return
-        - name: error-strings
-        - name: error-naming
-        - name: exported
-        - name: if-return
-        - name: increment-decrement
-        - name: var-naming
-        - name: var-declaration
-        - name: range
-        - name: receiver-naming
-        - name: time-naming
-        - name: unexported-return
-        - name: indent-error-flow
-        - name: errorf
-        - name: empty-block
-        - name: superfluous-else
-        - name: unreachable-code
-        - name: redefines-builtin-id
   exclusions:
     generated: lax
     presets:
@@ -89,20 +62,6 @@ formatters:
   enable:
     - gci
     - gofumpt
-  settings:
-    gci:
-      sections:
-        - standard
-        - default
-        - blank
-        - dot
-        - prefix(github.com/cometbft/cometbft)
-        - prefix(github.com/cosmos)
-        - prefix(cosmossdk.io)
-        - prefix(github.com/cosmos/cosmos-sdk)
-        - prefix(github.com/CosmWasm/wasmd)
-        - prefix(github.com/classic-terra/core)
-      custom-order: true
   exclusions:
     generated: lax
     paths:

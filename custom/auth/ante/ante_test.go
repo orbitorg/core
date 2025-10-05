@@ -3,12 +3,12 @@ package ante_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/suite"
-
-	dbm "github.com/cosmos/cosmos-db"
-
 	"cosmossdk.io/log"
-
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	terraapp "github.com/classic-terra/core/v3/app"
+	taxtypes "github.com/classic-terra/core/v3/x/tax/types"
+	treasurytypes "github.com/classic-terra/core/v3/x/treasury/types"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -20,12 +20,7 @@ import (
 	xauthsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
-
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-
-	terraapp "github.com/classic-terra/core/v3/app"
-	taxtypes "github.com/classic-terra/core/v3/x/tax/types"
-	treasurytypes "github.com/classic-terra/core/v3/x/treasury/types"
+	"github.com/stretchr/testify/suite"
 )
 
 // AnteTestSuite is a test suite to be used with ante handler tests.

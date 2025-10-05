@@ -3,16 +3,13 @@ package wasmbinding_test
 import (
 	"encoding/json"
 
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v3/types"
-
 	sdkmath "cosmossdk.io/math"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
+	wasmvmtypes "github.com/CosmWasm/wasmvm/v3/types"
 	core "github.com/classic-terra/core/v3/types"
 	"github.com/classic-terra/core/v3/wasmbinding/bindings"
 	markettypes "github.com/classic-terra/core/v3/x/market/types"
 	treasurytypes "github.com/classic-terra/core/v3/x/treasury/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // go test -v -run ^TestQuerySwap$ github.com/classic-terra/core/v3/wasmbinding/test
