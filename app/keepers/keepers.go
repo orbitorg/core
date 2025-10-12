@@ -1,6 +1,7 @@
 package keepers
 
 import (
+	"fmt"
 	"path/filepath"
 
 	sdklog "cosmossdk.io/log"
@@ -168,6 +169,11 @@ func NewAppKeepers(
 	accAddrCodec := address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
 	valAddrCodec := address.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix())
 	valConsAddrCodec := address.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix())
+
+	// load state streaming if enabled
+	if err := bApp.RegisterStreamingServices(appOpts, appKeepers.keys); err != nil {
+		panic(fmt.Errorf("failed to load state streaming err %v", err))
+	}
 
 	// init params keeper and subspaces
 	appKeepers.ParamsKeeper = initParamsKeeper(
