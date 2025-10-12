@@ -238,11 +238,6 @@ func initGenesis(chain *internalChain, forkHeight int) error {
 		return err
 	}
 
-	err = updateModuleGenesis(appGenState, crisistypes.ModuleName, &crisistypes.GenesisState{}, updateCrisisGenesis)
-	if err != nil {
-		return err
-	}
-
 	err = updateModuleGenesis(appGenState, taxtypes.ModuleName, &taxtypes.GenesisState{}, updateTaxGenesis)
 	if err != nil {
 		return err
