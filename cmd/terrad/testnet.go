@@ -223,7 +223,7 @@ func InitTestnet(
 
 		// create the validator for node i
 		createValMsg, err := stakingtypes.NewMsgCreateValidator(
-			sdk.ValAddress(addr).String(),
+			addr.String(),
 			valPubKeys[i],
 			sdk.NewCoin(core.MicroLunaDenom, valTokens),
 			stakingtypes.NewDescription(nodeDirName, "", "", "", ""),
