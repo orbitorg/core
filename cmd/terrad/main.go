@@ -3,10 +3,10 @@ package main
 import (
 	"os"
 
-	core "github.com/classic-terra/core/v3/types"
 	terraapp "github.com/classic-terra/core/v3/app"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	core "github.com/classic-terra/core/v3/types"
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func init() {
