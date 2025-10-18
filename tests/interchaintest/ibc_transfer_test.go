@@ -27,8 +27,8 @@ func TestTerraGaiaIBCTranfer(t *testing.T) {
 	t.Parallel()
 
 	// Create chain factory with Terra Classic
-	numVals := 3
-	numFullNodes := 3
+	numVals := 1
+	numFullNodes := 1
 	// tax rate in ictest is 0.0001
 	taxRate := sdkmath.LegacyNewDecWithPrec(1, 4)
 
