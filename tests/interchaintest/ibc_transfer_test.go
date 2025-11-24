@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/cosmos/interchaintest/v10/conformance"
+
 	"cosmossdk.io/math"
 	sdkmath "cosmossdk.io/math"
 	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
@@ -48,7 +50,7 @@ func TestTerraGaiaIBCTranfer(t *testing.T) {
 		},
 		{
 			Name:          "gaia",
-			Version:       "v12.0.0",
+			Version:       "v25.1.1",
 			NumValidators: &numVals,
 			NumFullNodes:  &numFullNodes,
 		},
@@ -61,8 +63,8 @@ func TestTerraGaiaIBCTranfer(t *testing.T) {
 	terra, gaia := chains[0].(*cosmos.CosmosChain), chains[1].(*cosmos.CosmosChain)
 
 	// Create relayer factory to utilize the go-relayer
-	r := interchaintest.NewBuiltinRelayerFactory(ibc.CosmosRly, zaptest.NewLogger(t)).
-		Build(t, client, network)
+	rf := interchaintest.NewBuiltinRelayerFactory(ibc.CosmosRly, zaptest.NewLogger(t))
+	r := rf.Build(t, client, network)
 
 	// Create a new Interchain object which describes the chains, relayers, and IBC connections we want to use
 	ic := interchaintest.NewInterchain().
@@ -190,4 +192,7 @@ func TestTerraGaiaIBCTranfer(t *testing.T) {
 	gaiaUserUpdateBal, err = gaia.GetBalance(ctx, gaiaUserAddr, terraIBCDenom)
 	require.NoError(t, err)
 	require.Equal(t, math.NewInt(0), gaiaUserUpdateBal)
+
+	// test IBC conformance before chain upgrade
+	conformance.TestChainPair(t, ctx, client, network, terra, gaia, rf, rep, r, pathTerraGaia)
 }
