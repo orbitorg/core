@@ -50,7 +50,7 @@ func TestTerraGaiaIBCTranfer(t *testing.T) {
 		},
 		{
 			Name:          "gaia",
-			Version:       "v25.1.1",
+			Version:       "v25.1.0",
 			NumValidators: &numVals,
 			NumFullNodes:  &numFullNodes,
 		},
