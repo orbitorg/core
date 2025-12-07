@@ -51,6 +51,7 @@ func TestTerraGaiaIBCTranfer(t *testing.T) {
 		{
 			Name:          "gaia",
 			Version:       "v25.1.0",
+			ChainConfig:   createGaiaConfig(), // Added chain config for Gaia
 			NumValidators: &numVals,
 			NumFullNodes:  &numFullNodes,
 		},
