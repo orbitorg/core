@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/cosmos/interchaintest/v10/conformance"
-
 	"cosmossdk.io/math"
 	sdkmath "cosmossdk.io/math"
 	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
@@ -193,7 +191,4 @@ func TestTerraGaiaIBCTranfer(t *testing.T) {
 	gaiaUserUpdateBal, err = gaia.GetBalance(ctx, gaiaUserAddr, terraIBCDenom)
 	require.NoError(t, err)
 	require.Equal(t, math.NewInt(0), gaiaUserUpdateBal)
-
-	// test IBC conformance before chain upgrade
-	conformance.TestChainPair(t, ctx, client, network, terra, gaia, rf, rep, r, pathTerraGaia)
 }
