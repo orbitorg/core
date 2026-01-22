@@ -3,17 +3,17 @@
     {
       "@type": "/cosmos.distribution.v1beta1.MsgCommunityPoolSpend",
       "authority": "terra10d07y265gmmuvt4z0w9aw880jnsr700juxf95n",
-      "recipient": "terra1jcdhx3ddlpunyu40ufd2z3j3wx70v2ehg9ul7y",
+      "recipient": "terra1dmqa34vl5u4hfnftkwh57dn96hrvx6p8rwe86v",
       "amount": [
         {
           "denom": "uluna",
-          "amount": "23864258000000"
+          "amount": "1045997684000000"
         }
       ]
     }
   ],
-  "metadata": "ipfs://QmXyAhL4ZjAhTLT88CShabyEf6FiP3rhgJNrtG1x6SYFZN",
+  "metadata": "ipfs://bafkreid6clmwndoxhdnzn3lcf5h4n2uozzfzpz7333zxsqigmmvfefe344",
   "deposit": "1000000000000uluna",
-  "title": "OrbitLabs' Review of Reverse Charge Tax Mechanism",
-  "summary": "Spend Proposal for the review of the Reverse Charge Tax Mechanism."
+  "title": "Spending Proposal: Terra Classic Upgrade to Cosmos SDK v0.53 with IBC v2 (Eureka) Support - Phase 1",
+  "summary": "https://discourse.luncgoblins.com/t/terra-classic-upgrade-to-cosmos-sdk-v0-53-with-ibc-v2-eureka-support"
 }
