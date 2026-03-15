@@ -1,4 +1,4 @@
-package v14
+package v14_1
 
 import (
 	"context"
@@ -11,9 +11,9 @@ import (
 	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 )
 
-// CreateV14UpgradeHandler wires module migrations for v14.
+// CreateV14_1UpgradeHandler wires module migrations for v14_1.
 // Add any one-off migration logic here before/after RunMigrations if needed.
-func CreateV14UpgradeHandler(
+func CreateV14_1UpgradeHandler(
 	mm *module.Manager,
 	cfg module.Configurator,
 	_ upgrades.BaseAppParamManager,
