@@ -99,6 +99,7 @@ jobs:
                     - TestFeeTaxWasm
                     - TestAPIRegression
                     - TestOracleDelegateFeedConsent
+                    - TestValidatorTxStuckInLocalMempoolPoisonsSequence
 
         steps:
             # 1. Checkout

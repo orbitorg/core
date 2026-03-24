@@ -166,6 +166,52 @@ func (n *NodeConfig) QuerySigningInfo(consAddress string) (string, error) {
 	return resp.ValSigningInfo.JailedUntil, nil
 }
 
+func (n *NodeConfig) QueryAccountSequence(address string) (uint64, error) {
+	path := fmt.Sprintf("cosmos/auth/v1beta1/account_info/%s", address)
+	bz, err := n.QueryGRPCGateway(path)
+	if err != nil {
+		return 0, err
+	}
+
+	var resp struct {
+		Info struct {
+			Sequence string `json:"sequence"`
+		} `json:"info"`
+	}
+	if err := json.Unmarshal(bz, &resp); err != nil {
+		return 0, err
+	}
+
+	var seq uint64
+	if _, err := fmt.Sscanf(resp.Info.Sequence, "%d", &seq); err != nil {
+		return 0, err
+	}
+	return seq, nil
+}
+
+func (n *NodeConfig) QueryValidatorCommissionRate(valoper string) (string, error) {
+	path := fmt.Sprintf("cosmos/staking/v1beta1/validators/%s", valoper)
+	bz, err := n.QueryGRPCGateway(path)
+	if err != nil {
+		return "", err
+	}
+
+	var resp struct {
+		Validator struct {
+			Commission struct {
+				CommissionRates struct {
+					Rate string `json:"rate"`
+				} `json:"commission_rates"`
+			} `json:"commission"`
+		} `json:"validator"`
+	}
+	if err := json.Unmarshal(bz, &resp); err != nil {
+		return "", err
+	}
+
+	return resp.Validator.Commission.CommissionRates.Rate, nil
+}
+
 func (n *NodeConfig) QueryFeederDelegation(validatorAddr string) (string, error) {
 	path := fmt.Sprintf("terra/oracle/v1beta1/validators/%s/feeder", validatorAddr)
 	bz, err := n.QueryGRPCGateway(path)
@@ -294,6 +340,14 @@ func (n *NodeConfig) QueryCurrentHeight() (int64, error) {
 		return 0, err
 	}
 	return status.SyncInfo.LatestBlockHeight, nil
+}
+
+func (n *NodeConfig) QueryUnconfirmedTxCount() (int, error) {
+	resp, err := n.rpcClient.UnconfirmedTxs(context.Background(), nil)
+	if err != nil {
+		return 0, err
+	}
+	return resp.Count, nil
 }
 
 // QueryLatestBlockTime returns the latest block time.

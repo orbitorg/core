@@ -46,6 +46,18 @@ func NewNodeConfig(t *testing.T, initNode *initialization.Node, initConfig *init
 // The node configuration must be already added to the chain config prior to calling this
 // method.
 func (n *NodeConfig) Run() error {
+	return n.run(true)
+}
+
+// RunWithoutPeerWait starts the node and waits only until the RPC endpoint is
+// reachable, but deliberately does not wait for peer connectivity to stabilize.
+// This is useful for e2e tests that need to exercise behavior when a tx is
+// broadcast to a just-restarted node before it has established p2p connections.
+func (n *NodeConfig) RunWithoutPeerWait() error {
+	return n.run(false)
+}
+
+func (n *NodeConfig) run(waitForPeers bool) error {
 	n.t.Logf("starting node container: %s", n.Name)
 	resource, err := n.containerManager.RunNodeResource(n.Name, n.ConfigDir)
 	if err != nil {
@@ -76,21 +88,23 @@ func (n *NodeConfig) Run() error {
 		"Terra node failed to produce blocks",
 	)
 
-	// Wait for 2 more blocks to confirm p2p connections are established.
-	// Without this, a just-restarted node may not yet have peers and any
-	// tx broadcast to it would sit in the local mempool and never be committed.
-	firstHeight, _ := n.QueryCurrentHeight()
-	if firstHeight > 0 {
-		require.Eventually(
-			n.t,
-			func() bool {
-				h, err := n.QueryCurrentHeight()
-				return err == nil && h >= firstHeight+2
-			},
-			initialization.TwoMin,
-			time.Second,
-			"Terra node failed to advance blocks after start",
-		)
+	if waitForPeers {
+		// Wait for 2 more blocks to confirm p2p connections are established.
+		// Without this, a just-restarted node may not yet have peers and any
+		// tx broadcast to it would sit in the local mempool and never be committed.
+		firstHeight, _ := n.QueryCurrentHeight()
+		if firstHeight > 0 {
+			require.Eventually(
+				n.t,
+				func() bool {
+					h, err := n.QueryCurrentHeight()
+					return err == nil && h >= firstHeight+2
+				},
+				initialization.TwoMin,
+				time.Second,
+				"Terra node failed to advance blocks after start",
+			)
+		}
 	}
 
 	return n.extractOperatorAddressIfValidator()
