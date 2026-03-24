@@ -39,6 +39,10 @@ func isolateNodeFromPeers(node *chain.NodeConfig) (restore func(), err error) {
 	cfg.P2P.PersistentPeers = ""
 	cfg.P2P.Seeds = ""
 	cfg.P2P.PexReactor = false
+	cfg.P2P.ListenAddress = "tcp://127.0.0.1:26656"
+	cfg.P2P.ExternalAddress = ""
+	cfg.P2P.UnconditionalPeerIDs = ""
+	cfg.P2P.PrivatePeerIDs = ""
 	tmconfig.WriteConfigFile(cfgPath, cfg)
 	_ = os.Remove(addrBookPath)
 
