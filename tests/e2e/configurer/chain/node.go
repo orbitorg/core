@@ -49,10 +49,9 @@ func (n *NodeConfig) Run() error {
 	return n.run(true)
 }
 
-// RunWithoutPeerWait starts the node and waits only until the RPC endpoint is
-// reachable, but deliberately does not wait for peer connectivity to stabilize.
-// This is useful for e2e tests that need to exercise behavior when a tx is
-// broadcast to a just-restarted node before it has established p2p connections.
+// RunWithoutPeerWait starts a node but intentionally skips the extra wait for
+// peer connectivity. This allows e2e tests to broadcast txs to a just-restarted
+// node before it has joined the network, reproducing local-mempool-only flows.
 func (n *NodeConfig) RunWithoutPeerWait() error {
 	return n.run(false)
 }

@@ -72,7 +72,7 @@ func (s *IntegrationTestSuite) TestValidatorTxStuckInLocalMempoolPoisonsSequence
 	initialSequence, err := observerNode.QueryAccountSequence(validatorAddr)
 	s.Require().NoError(err)
 
-	initialCommission, err := observerNode.QueryValidatorCommissionRate(isolatedNode.OperatorAddress)
+	initialDetails, err := observerNode.QueryValidatorDescriptionDetails(isolatedNode.OperatorAddress)
 	s.Require().NoError(err)
 
 	s.Require().NoError(isolatedNode.Stop())
@@ -81,7 +81,7 @@ func (s *IntegrationTestSuite) TestValidatorTxStuckInLocalMempoolPoisonsSequence
 	_, _, err = isolatedNode.BroadcastTxSync(
 		[]string{
 			"terrad", "tx", "staking", "edit-validator",
-			"--commission-rate=0.11",
+			"--details=local-mempool-sequence-poisoning",
 			"--from=" + initialization.ValidatorWalletName,
 		},
 		"\"code\":0",
@@ -99,9 +99,9 @@ func (s *IntegrationTestSuite) TestValidatorTxStuckInLocalMempoolPoisonsSequence
 	s.Require().NoError(err)
 	s.Require().Equal(initialSequence, sequenceAfterPendingEdit)
 
-	commissionAfterPendingEdit, err := observerNode.QueryValidatorCommissionRate(isolatedNode.OperatorAddress)
+	detailsAfterPendingEdit, err := observerNode.QueryValidatorDescriptionDetails(isolatedNode.OperatorAddress)
 	s.Require().NoError(err)
-	s.Require().Equal(initialCommission, commissionAfterPendingEdit)
+	s.Require().Equal(initialDetails, detailsAfterPendingEdit)
 
 	out, errOut, err := isolatedNode.BroadcastTxSync(
 		[]string{
@@ -141,9 +141,9 @@ func (s *IntegrationTestSuite) TestValidatorTxStuckInLocalMempoolPoisonsSequence
 	s.Require().NoError(err)
 	s.Require().Equal(initialSequence, finalSequence)
 
-	finalCommission, err := observerNode.QueryValidatorCommissionRate(isolatedNode.OperatorAddress)
+	finalDetails, err := observerNode.QueryValidatorDescriptionDetails(isolatedNode.OperatorAddress)
 	s.Require().NoError(err)
-	s.Require().Equal(initialCommission, finalCommission)
+	s.Require().Equal(initialDetails, finalDetails)
 
 	count, err := isolatedNode.QueryUnconfirmedTxCount()
 	s.Require().NoError(err)

@@ -189,7 +189,7 @@ func (n *NodeConfig) QueryAccountSequence(address string) (uint64, error) {
 	return seq, nil
 }
 
-func (n *NodeConfig) QueryValidatorCommissionRate(valoper string) (string, error) {
+func (n *NodeConfig) QueryValidatorDescriptionDetails(valoper string) (string, error) {
 	path := fmt.Sprintf("cosmos/staking/v1beta1/validators/%s", valoper)
 	bz, err := n.QueryGRPCGateway(path)
 	if err != nil {
@@ -198,18 +198,16 @@ func (n *NodeConfig) QueryValidatorCommissionRate(valoper string) (string, error
 
 	var resp struct {
 		Validator struct {
-			Commission struct {
-				CommissionRates struct {
-					Rate string `json:"rate"`
-				} `json:"commission_rates"`
-			} `json:"commission"`
+			Description struct {
+				Details string `json:"details"`
+			} `json:"description"`
 		} `json:"validator"`
 	}
 	if err := json.Unmarshal(bz, &resp); err != nil {
 		return "", err
 	}
 
-	return resp.Validator.Commission.CommissionRates.Rate, nil
+	return resp.Validator.Description.Details, nil
 }
 
 func (n *NodeConfig) QueryFeederDelegation(validatorAddr string) (string, error) {

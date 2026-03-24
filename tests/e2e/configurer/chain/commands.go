@@ -32,9 +32,9 @@ func (n *NodeConfig) StoreWasmCode(wasmFile, from string) {
 	n.LogActionF("successfully stored")
 }
 
-// BroadcastTxSync broadcasts a tx in sync mode and returns the raw stdout/stderr
-// without waiting for the tx to be committed. This is useful in e2e tests that
-// intentionally exercise local-mempool-only behavior.
+// BroadcastTxSync broadcasts a tx in sync mode and returns raw stdout/stderr
+// without waiting for commit. This is useful for reproducing local-mempool-only
+// sequence behavior.
 func (n *NodeConfig) BroadcastTxSync(command []string, successStr string) (string, string, error) {
 	allTxArgs := []string{
 		fmt.Sprintf("--chain-id=%s", n.chainID),
