@@ -59,7 +59,7 @@ func isolateNodeFromPeers(node *chain.NodeConfig) (restore func(), err error) {
 }
 
 func (s *IntegrationTestSuite) TestValidatorTxStuckInLocalMempoolPoisonsSequence() {
-	chainCfg := s.configurer.GetChainConfig(0)
+	chainCfg := s.configurer.GetChainConfig(0).WithT(s.T())
 	observerNode := chainCfg.NodeConfigs[0]
 	isolatedNode := chainCfg.NodeConfigs[1]
 

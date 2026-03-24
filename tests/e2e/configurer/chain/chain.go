@@ -149,6 +149,14 @@ func New(t *testing.T, containerManager *containers.Manager, id string, initVali
 	}
 }
 
+func (c *Config) WithT(t *testing.T) *Config {
+	c.t = t
+	for _, node := range c.NodeConfigs {
+		node.WithT(t)
+	}
+	return c
+}
+
 // CreateNode returns new initialized NodeConfig.
 func (c *Config) CreateNode(initNode *initialization.Node) *NodeConfig {
 	nodeConfig := &NodeConfig{

@@ -177,6 +177,11 @@ func (n *NodeConfig) WithSetupTime(t time.Time) *NodeConfig {
 	return n
 }
 
+func (n *NodeConfig) WithT(t *testing.T) *NodeConfig {
+	n.t = t
+	return n
+}
+
 func (n *NodeConfig) LogActionF(msg string, args ...interface{}) {
 	timeSinceStart := time.Since(n.setupTime).Round(time.Millisecond)
 	s := fmt.Sprintf(msg, args...)
