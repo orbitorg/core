@@ -78,14 +78,15 @@ func (s *IntegrationTestSuite) TestValidatorTxStuckInLocalMempoolPoisonsSequence
 	s.Require().NoError(isolatedNode.Stop())
 	s.Require().NoError(isolatedNode.RunWithoutPeerWait())
 
-	_, _, err = isolatedNode.BroadcastTxSync(
+	_, _, err = isolatedNode.GenerateSignAndBroadcastTxSync(
 		[]string{
 			"terrad", "tx", "staking", "edit-validator",
 			"--details=local-mempool-sequence-poisoning",
-			"--account-number=" + strconv.FormatUint(accountNumber, 10),
-			"--sequence=" + strconv.FormatUint(initialSequence, 10),
 			"--from=" + initialization.ValidatorWalletName,
 		},
+		initialization.ValidatorWalletName,
+		accountNumber,
+		initialSequence,
 		"\"code\":0",
 	)
 	s.Require().NoError(err)
@@ -105,14 +106,15 @@ func (s *IntegrationTestSuite) TestValidatorTxStuckInLocalMempoolPoisonsSequence
 	s.Require().NoError(err)
 	s.Require().Equal(initialDetails, detailsAfterPendingEdit)
 
-	out, errOut, err := isolatedNode.BroadcastTxSync(
+	out, errOut, err := isolatedNode.GenerateSignAndBroadcastTxSync(
 		[]string{
 			"terrad", "tx", "distribution", "withdraw-rewards", isolatedNode.OperatorAddress,
 			"--commission",
-			"--account-number=" + strconv.FormatUint(accountNumber, 10),
-			"--sequence=" + strconv.FormatUint(initialSequence, 10),
 			"--from=" + initialization.ValidatorWalletName,
 		},
+		initialization.ValidatorWalletName,
+		accountNumber,
+		initialSequence,
 		"incorrect account sequence",
 	)
 	s.Require().NoError(err)
@@ -123,14 +125,15 @@ func (s *IntegrationTestSuite) TestValidatorTxStuckInLocalMempoolPoisonsSequence
 	s.Require().Contains(combined, "expected "+strconv.FormatUint(initialSequence+1, 10))
 	s.Require().Contains(combined, "got "+strconv.FormatUint(initialSequence, 10))
 
-	_, _, err = isolatedNode.BroadcastTxSync(
+	_, _, err = isolatedNode.GenerateSignAndBroadcastTxSync(
 		[]string{
 			"terrad", "tx", "distribution", "withdraw-rewards", isolatedNode.OperatorAddress,
 			"--commission",
-			"--account-number=" + strconv.FormatUint(accountNumber, 10),
 			"--from=" + initialization.ValidatorWalletName,
-			"--sequence=" + strconv.FormatUint(initialSequence+1, 10),
 		},
+		initialization.ValidatorWalletName,
+		accountNumber,
+		initialSequence+1,
 		"\"code\":0",
 	)
 	s.Require().NoError(err)

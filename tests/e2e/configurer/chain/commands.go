@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	sdkmath "cosmossdk.io/math"
 	app "github.com/classic-terra/core/v4/app"
@@ -57,6 +58,90 @@ func (n *NodeConfig) BroadcastTxSync(command []string, successStr string) (strin
 
 	outBuf, errBuf, err := n.containerManager.ExecCmd(n.t, n.Name, append(command, allTxArgs...), successStr, false)
 	return outBuf.String(), errBuf.String(), err
+}
+
+// GenerateSignAndBroadcastTxSync generates an unsigned tx, signs it offline
+// with the provided account metadata, then broadcasts it in sync mode. This is
+// more deterministic than relying on a disconnected node to auto-discover
+// signer metadata during CLI signing.
+func (n *NodeConfig) GenerateSignAndBroadcastTxSync(
+	command []string,
+	from string,
+	accountNumber uint64,
+	sequence uint64,
+	successStr string,
+) (string, string, error) {
+	allTxArgs := []string{
+		fmt.Sprintf("--chain-id=%s", n.chainID),
+		"--yes",
+		"--keyring-backend=test",
+		"--log_format=json",
+		"--generate-only",
+	}
+
+	addGasFlags := true
+	for _, cmd := range command {
+		if strings.HasPrefix(cmd, "--gas") || strings.HasPrefix(cmd, "--fees") {
+			addGasFlags = false
+			break
+		}
+	}
+	if addGasFlags {
+		allTxArgs = append(allTxArgs, fmt.Sprintf("--gas=%d", containers.GasLimit), "--fees=0uluna")
+	}
+
+	unsignedTxPath := fmt.Sprintf("/tmp/e2e-unsigned-%d.json", time.Now().UnixNano())
+	signedTxPath := fmt.Sprintf("/tmp/e2e-signed-%d.json", time.Now().UnixNano())
+
+	generateCmd := shellQuoteArgs(append(command, allTxArgs...)) + " > " + shellQuoteArg(unsignedTxPath)
+	signCmd := shellQuoteArgs([]string{
+		"terrad", "tx", "sign", unsignedTxPath,
+		fmt.Sprintf("--from=%s", from),
+		fmt.Sprintf("--chain-id=%s", n.chainID),
+		"--keyring-backend=test",
+		"--offline",
+		fmt.Sprintf("--account-number=%d", accountNumber),
+		fmt.Sprintf("--sequence=%d", sequence),
+		"--output=json",
+	}) + " > " + shellQuoteArg(signedTxPath)
+	broadcastCmd := shellQuoteArgs([]string{
+		"terrad", "tx", "broadcast", signedTxPath,
+		"--broadcast-mode=sync",
+		"--output=json",
+	})
+
+	shellCmd := fmt.Sprintf(
+		"set -e; trap 'rm -f %s %s' EXIT; %s && %s && %s",
+		shellQuoteArg(unsignedTxPath),
+		shellQuoteArg(signedTxPath),
+		generateCmd,
+		signCmd,
+		broadcastCmd,
+	)
+
+	outBuf, errBuf, err := n.containerManager.ExecCmd(
+		n.t,
+		n.Name,
+		[]string{"sh", "-lc", shellCmd},
+		successStr,
+		false,
+	)
+	return outBuf.String(), errBuf.String(), err
+}
+
+func shellQuoteArgs(args []string) string {
+	quoted := make([]string, len(args))
+	for i, arg := range args {
+		quoted[i] = shellQuoteArg(arg)
+	}
+	return strings.Join(quoted, " ")
+}
+
+func shellQuoteArg(arg string) string {
+	if arg == "" {
+		return "''"
+	}
+	return "'" + strings.ReplaceAll(arg, "'", `'"'"'`) + "'"
 }
 
 func (n *NodeConfig) InstantiateWasmContract(codeID, initMsg, amount, from string) {
