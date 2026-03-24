@@ -166,27 +166,39 @@ func (n *NodeConfig) QuerySigningInfo(consAddress string) (string, error) {
 	return resp.ValSigningInfo.JailedUntil, nil
 }
 
-func (n *NodeConfig) QueryAccountSequence(address string) (uint64, error) {
+func (n *NodeConfig) QueryAccountInfo(address string) (accountNumber uint64, sequence uint64, err error) {
 	path := fmt.Sprintf("cosmos/auth/v1beta1/account_info/%s", address)
 	bz, err := n.QueryGRPCGateway(path)
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
 	var resp struct {
 		Info struct {
-			Sequence string `json:"sequence"`
+			AccountNumber string `json:"account_number"`
+			Sequence      string `json:"sequence"`
 		} `json:"info"`
 	}
 	if err := json.Unmarshal(bz, &resp); err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
-	var seq uint64
-	if _, err := fmt.Sscanf(resp.Info.Sequence, "%d", &seq); err != nil {
+	if _, err := fmt.Sscanf(resp.Info.AccountNumber, "%d", &accountNumber); err != nil {
+		return 0, 0, err
+	}
+	if _, err := fmt.Sscanf(resp.Info.Sequence, "%d", &sequence); err != nil {
+		return 0, 0, err
+	}
+
+	return accountNumber, sequence, nil
+}
+
+func (n *NodeConfig) QueryAccountSequence(address string) (uint64, error) {
+	_, sequence, err := n.QueryAccountInfo(address)
+	if err != nil {
 		return 0, err
 	}
-	return seq, nil
+	return sequence, nil
 }
 
 func (n *NodeConfig) QueryValidatorDescriptionDetails(valoper string) (string, error) {

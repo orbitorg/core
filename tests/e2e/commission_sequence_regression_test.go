@@ -69,7 +69,7 @@ func (s *IntegrationTestSuite) TestValidatorTxStuckInLocalMempoolPoisonsSequence
 	})
 
 	validatorAddr := isolatedNode.GetWallet(initialization.ValidatorWalletName)
-	initialSequence, err := observerNode.QueryAccountSequence(validatorAddr)
+	accountNumber, initialSequence, err := observerNode.QueryAccountInfo(validatorAddr)
 	s.Require().NoError(err)
 
 	initialDetails, err := observerNode.QueryValidatorDescriptionDetails(isolatedNode.OperatorAddress)
@@ -82,6 +82,8 @@ func (s *IntegrationTestSuite) TestValidatorTxStuckInLocalMempoolPoisonsSequence
 		[]string{
 			"terrad", "tx", "staking", "edit-validator",
 			"--details=local-mempool-sequence-poisoning",
+			"--account-number=" + strconv.FormatUint(accountNumber, 10),
+			"--sequence=" + strconv.FormatUint(initialSequence, 10),
 			"--from=" + initialization.ValidatorWalletName,
 		},
 		"\"code\":0",
@@ -107,6 +109,8 @@ func (s *IntegrationTestSuite) TestValidatorTxStuckInLocalMempoolPoisonsSequence
 		[]string{
 			"terrad", "tx", "distribution", "withdraw-rewards", isolatedNode.OperatorAddress,
 			"--commission",
+			"--account-number=" + strconv.FormatUint(accountNumber, 10),
+			"--sequence=" + strconv.FormatUint(initialSequence, 10),
 			"--from=" + initialization.ValidatorWalletName,
 		},
 		"incorrect account sequence",
@@ -123,6 +127,7 @@ func (s *IntegrationTestSuite) TestValidatorTxStuckInLocalMempoolPoisonsSequence
 		[]string{
 			"terrad", "tx", "distribution", "withdraw-rewards", isolatedNode.OperatorAddress,
 			"--commission",
+			"--account-number=" + strconv.FormatUint(accountNumber, 10),
 			"--from=" + initialization.ValidatorWalletName,
 			"--sequence=" + strconv.FormatUint(initialSequence+1, 10),
 		},
