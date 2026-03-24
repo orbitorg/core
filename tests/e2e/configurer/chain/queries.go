@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"time"
 
 	sdkmath "cosmossdk.io/math"
@@ -167,30 +168,68 @@ func (n *NodeConfig) QuerySigningInfo(consAddress string) (string, error) {
 }
 
 func (n *NodeConfig) QueryAccountInfo(address string) (accountNumber uint64, sequence uint64, err error) {
-	path := fmt.Sprintf("cosmos/auth/v1beta1/account_info/%s", address)
-	bz, err := n.QueryGRPCGateway(path)
+	out, _, err := n.containerManager.ExecCmd(
+		n.t,
+		n.Name,
+		[]string{"terrad", "query", "auth", "account", address, "--output=json"},
+		"",
+		false,
+	)
 	if err != nil {
 		return 0, 0, err
 	}
 
-	var resp struct {
-		Info struct {
-			AccountNumber string `json:"account_number"`
-			Sequence      string `json:"sequence"`
-		} `json:"info"`
-	}
-	if err := json.Unmarshal(bz, &resp); err != nil {
+	var resp any
+	if err := json.Unmarshal(out.Bytes(), &resp); err != nil {
 		return 0, 0, err
 	}
 
-	if _, err := fmt.Sscanf(resp.Info.AccountNumber, "%d", &accountNumber); err != nil {
+	accountNumberStr, ok := findJSONStringField(resp, "account_number")
+	if !ok {
+		return 0, 0, fmt.Errorf("account_number not found in auth account query response")
+	}
+	sequenceStr, ok := findJSONStringField(resp, "sequence")
+	if !ok {
+		return 0, 0, fmt.Errorf("sequence not found in auth account query response")
+	}
+
+	accountNumber, err = strconv.ParseUint(accountNumberStr, 10, 64)
+	if err != nil {
 		return 0, 0, err
 	}
-	if _, err := fmt.Sscanf(resp.Info.Sequence, "%d", &sequence); err != nil {
+	sequence, err = strconv.ParseUint(sequenceStr, 10, 64)
+	if err != nil {
 		return 0, 0, err
 	}
 
 	return accountNumber, sequence, nil
+}
+
+func findJSONStringField(v any, key string) (string, bool) {
+	switch value := v.(type) {
+	case map[string]any:
+		if raw, ok := value[key]; ok {
+			switch s := raw.(type) {
+			case string:
+				return s, true
+			case float64:
+				return strconv.FormatUint(uint64(s), 10), true
+			}
+		}
+		for _, nested := range value {
+			if found, ok := findJSONStringField(nested, key); ok {
+				return found, true
+			}
+		}
+	case []any:
+		for _, nested := range value {
+			if found, ok := findJSONStringField(nested, key); ok {
+				return found, true
+			}
+		}
+	}
+
+	return "", false
 }
 
 func (n *NodeConfig) QueryAccountSequence(address string) (uint64, error) {
