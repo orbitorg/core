@@ -1,0 +1,8 @@
+{
+  "title": "Spending Proposal: Terra Classic Upgrade to Cosmos SDK v0.53 with IBC v2 (Eureka) Support - Phase 2",
+  "authors": ["OrbitLabs"],
+  "summary": "Spend Proposal for Phase 2 of the Terra Classic upgrade to Cosmos SDK v0.53 with IBC v2 (Eureka) support, covering mainnet execution and post-upgrade support.",
+  "details": "This proposal requests funding for Phase 2 (Mainnet Execution & Post-Upgrade Support) of the Terra Classic upgrade to Cosmos SDK v0.53 with IBC v2 (Eureka) support, following the successful completion of Phase 1 (Testnet Implementation & Validation) on the rebel-2 testnet. Phase 2 deliverables, now completed on mainnet, include: preparation of the mainnet upgrade governance proposal, validator coordination and upgrade support, mainnet upgrade execution (SDK v0.53.4, CometBFT v0.38.19, Wasmd v0.61.4, IBC-Go v10.3.0), and immediate post-upgrade monitoring and stability verification. The proposal requests funding of $16,000 USD (equivalent to approximately 379,146,919 LUNC at a reference price of $0.00004220 per LUNC) for the work.",
+  "proposal_forum_url": "https://discourse.luncgoblins.com/t/terra-classic-upgrade-to-cosmos-sdk-v0-53-with-ibc-v2-eureka-support",
+  "vote_option_context": "Yes: You support funding Phase 2 of the SDK v0.53 + IBC v2 upgrade (mainnet execution and post-upgrade support) and want to approve the spending proposal. No: You do not support this spending proposal. No With Veto: You believe this spending proposal is harmful to the network. Abstain: You have no opinion and want to abstain from voting."
+}
