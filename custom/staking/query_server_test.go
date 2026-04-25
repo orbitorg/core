@@ -10,6 +10,7 @@ import (
 	"github.com/classic-terra/core/v4/types"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	"github.com/cosmos/cosmos-sdk/x/staking/testutil"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -143,6 +144,57 @@ func (s *ValidatorDelegationsSuite) TestValidatorDelegations_ReproducesArchiveBu
 		resp.DelegationResponses, 5,
 		"pre-migration height must still return delegations (regression of archive-LCD bug)",
 	)
+}
+
+// TestValidatorDelegations_LegacyPathPaginates exercises the legacy-iteration
+// path through pagination: it walks all delegations across multiple pages and
+// asserts that (a) every page returns delegations matching only the requested
+// validator, (b) the union of pages equals the full delegation set, and
+// (c) walking terminates with an empty next_key.
+func (s *ValidatorDelegationsSuite) TestValidatorDelegations_LegacyPathPaginates() {
+	s.Setup(s.T(), types.ColumbusChainID)
+
+	totalDelegators := 12
+	valAddr := s.seedValidatorWithDelegations(30, totalDelegators)
+
+	querier := stakingkeeper.Querier{Keeper: s.App.StakingKeeper}
+	ss := s.App.GetSubspace(stakingtypes.ModuleName)
+	qs := customstaking.NewLegacyQueryServer(
+		querier, ss, s.App.StakingKeeper,
+		s.App.AppCodec(), s.App.GetKey(stakingtypes.StoreKey),
+	)
+
+	// Drop the reverse-index and force the legacy path.
+	s.dropReverseIndex()
+	queryCtx := s.Ctx.WithBlockHeight(28214399)
+
+	pageSize := uint64(5)
+	seen := make(map[string]struct{})
+	var nextKey []byte
+
+	for pages := 0; pages < 10; pages++ {
+		req := &stakingtypes.QueryValidatorDelegationsRequest{
+			ValidatorAddr: valAddr.String(),
+			Pagination:    &query.PageRequest{Key: nextKey, Limit: pageSize},
+		}
+		resp, err := qs.ValidatorDelegations(queryCtx, req)
+		s.Require().NoError(err)
+		s.Require().NotNil(resp.Pagination)
+
+		for _, d := range resp.DelegationResponses {
+			s.Require().Equal(valAddr.String(), d.Delegation.ValidatorAddress,
+				"page must only contain delegations for the queried validator")
+			seen[d.Delegation.DelegatorAddress] = struct{}{}
+		}
+
+		if len(resp.Pagination.NextKey) == 0 {
+			break
+		}
+		nextKey = resp.Pagination.NextKey
+	}
+
+	s.Require().Len(seen, totalDelegators,
+		"paginated walk must surface every delegation exactly once")
 }
 
 // TestValidatorDelegations_PostMigrationUsesIndex ensures the fix doesn't change

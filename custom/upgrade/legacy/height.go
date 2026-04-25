@@ -10,14 +10,18 @@ const (
 	LegacyUpgradeHeightV1  = int64(0)        // This is not included in the local testing as it would need v3 as a basis
 	LegacyUpgradeHeightV2  = int64(70)       // Local testing upgrade height to v8 (using upgrade-test-multi.sh script)
 
-	// MainnetStakingV5Height is the columbus-5 height at which the cosmos-sdk
-	// staking v4→v5 migration ran. That migration backfills the
-	// DelegationByValIndexKey (0x71) reverse-index from the primary
-	// DelegationKey (0x31). Heights below this value have no entries under
-	// 0x71, so the SDK's ValidatorDelegations query returns empty unless we
-	// route the read through the primary key.
+	// MainnetStakingV5Height / TestnetStakingV5Height: heights at which the
+	// cosmos-sdk staking v4→v5 migration ran on each chain. That migration
+	// backfills the DelegationByValIndexKey (0x71) reverse-index from the
+	// primary DelegationKey (0x31). Below these heights there are no entries
+	// under 0x71, so the SDK's ValidatorDelegations query returns empty
+	// unless we route the read through the primary key.
+	//
+	// Columbus boundary observed empirically on archive LCDs.
+	// Rebel-2 boundary corresponds to the v14 (sdk-53 + ibc-v2) upgrade
+	// scheduled by proposal #165 (luncdash.com/governance/165).
 	MainnetStakingV5Height = int64(28214400)
-	TestnetStakingV5Height = int64(0) // unset: rebel-2 v5 height not tracked here yet
+	TestnetStakingV5Height = int64(28917279)
 )
 
 // LegacyHandlingVersion represents different versions of legacy handling
