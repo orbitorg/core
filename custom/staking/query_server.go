@@ -2,6 +2,7 @@ package staking
 
 import (
 	"context"
+	"strconv"
 	"strings"
 
 	"cosmossdk.io/math"
@@ -250,7 +251,43 @@ func (q *LegacyQueryServer) DelegatorValidator(ctx context.Context, req *staking
 }
 
 func (q *LegacyQueryServer) HistoricalInfo(ctx context.Context, req *stakingtypes.QueryHistoricalInfoRequest) (*stakingtypes.QueryHistoricalInfoResponse, error) {
-	return q.QueryServer.HistoricalInfo(q.ensureLegacyParams(ctx), req)
+	ensuredCtx := q.ensureLegacyParams(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ensuredCtx)
+	if legacyupgrade.IsPreStakingV5(sdkCtx.ChainID(), sdkCtx.BlockHeight()) {
+		return q.historicalInfoLegacy(sdkCtx, req)
+	}
+	return q.QueryServer.HistoricalInfo(ensuredCtx, req)
+}
+
+// historicalInfoLegacy reads HistoricalInfo using the pre-v5-staking-migration
+// key encoding: prefix 0x50 followed by the ASCII-decimal height string. The
+// v5 migration (cosmos-sdk@v0.53.6/x/staking/migrations/v5/store.go:39) re-keys
+// every entry to a big-endian uint64; before that migration ran (block
+// 28214400 on Columbus, 28917279 on Rebel-2) IAVL state contains only the old
+// string-format keys, so the SDK's GetHistoricalInfo — which constructs the
+// new binary key — misses and returns NotFound.
+func (q *LegacyQueryServer) historicalInfoLegacy(
+	ctx sdk.Context, req *stakingtypes.QueryHistoricalInfoRequest,
+) (*stakingtypes.QueryHistoricalInfoResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
+	if req.Height < 0 {
+		return nil, status.Error(codes.InvalidArgument, "height cannot be negative")
+	}
+
+	store := ctx.KVStore(q.storeKey)
+	legacyKey := append(stakingtypes.HistoricalInfoKey, []byte(strconv.FormatInt(req.Height, 10))...)
+	bz := store.Get(legacyKey)
+	if bz == nil {
+		return nil, status.Errorf(codes.NotFound, "historical info for height %d not found", req.Height)
+	}
+
+	var hi stakingtypes.HistoricalInfo
+	if err := q.cdc.Unmarshal(bz, &hi); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return &stakingtypes.QueryHistoricalInfoResponse{Hist: &hi}, nil
 }
 
 func (q *LegacyQueryServer) Pool(ctx context.Context, req *stakingtypes.QueryPoolRequest) (*stakingtypes.QueryPoolResponse, error) {

@@ -1,10 +1,14 @@
 package staking_test
 
 import (
+	"encoding/binary"
+	"strconv"
 	"testing"
+	"time"
 
 	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
+	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	apptesting "github.com/classic-terra/core/v4/app/testing"
 	customstaking "github.com/classic-terra/core/v4/custom/staking"
 	"github.com/classic-terra/core/v4/types"
@@ -262,4 +266,141 @@ func (s *ValidatorDelegationsSuite) TestValidatorDelegations_PostMigrationUsesIn
 		resp.DelegationResponses, 0,
 		"at post-migration heights the legacy fallback must NOT trigger",
 	)
+}
+
+// rekeyHistoricalInfoToLegacyFormat takes every entry in the staking store
+// under the HistoricalInfoKey (0x50) prefix, deletes the new big-endian
+// uint64 key form, and re-writes the same value under the pre-v5-migration
+// key form (`0x50 || strconv.FormatInt(height, 10)`). This simulates the
+// IAVL state at heights *before* the v5 staking migration ran.
+//
+// Mirrors cosmos-sdk@v0.53.6/x/staking/migrations/v5/store.go:39 in reverse.
+func (s *ValidatorDelegationsSuite) rekeyHistoricalInfoToLegacyFormat() {
+	storeKey := s.App.GetKey(stakingtypes.StoreKey)
+	store := s.Ctx.KVStore(storeKey)
+
+	iter := storetypes.KVStorePrefixIterator(store, stakingtypes.HistoricalInfoKey)
+	defer iter.Close()
+
+	type entry struct {
+		oldKey []byte
+		height int64
+		value  []byte
+	}
+	var entries []entry
+	for ; iter.Valid(); iter.Next() {
+		fullKey := append([]byte{}, iter.Key()...) // already includes 0x50 prefix
+		val := append([]byte{}, iter.Value()...)
+		// new format: 0x50 || 8-byte big-endian height
+		if len(fullKey) != 1+8 {
+			continue
+		}
+		h := int64(binary.BigEndian.Uint64(fullKey[1:]))
+		entries = append(entries, entry{oldKey: fullKey, height: h, value: val})
+	}
+
+	for _, e := range entries {
+		store.Delete(e.oldKey)
+		legacyKey := append(stakingtypes.HistoricalInfoKey, []byte(strconv.FormatInt(e.height, 10))...)
+		store.Set(legacyKey, e.value)
+	}
+}
+
+// TestHistoricalInfo_ReproducesArchiveBug verifies the parallel bug to
+// ValidatorDelegations: ValidatorDelegations relies on the 0x71 reverse-index
+// that the v5 migration backfills, while HistoricalInfo relies on
+// big-endian-uint64 keys that the same migration writes (re-keying from
+// ASCII-decimal). On pre-migration archive heights the IAVL state holds only
+// the old string-format keys, so the SDK's GetHistoricalInfo returns NotFound
+// — confirmed live against archive-lcd.galacticshift.io at height 28214399
+// vs 28214400.
+//
+// Pre-fix:  expect NotFound (bug present).
+// Post-fix: expect HistoricalInfo populated (legacy reader hits string keys).
+func (s *ValidatorDelegationsSuite) TestHistoricalInfo_ReproducesArchiveBug() {
+	s.Setup(s.T(), types.ColumbusChainID)
+	s.seedValidatorWithDelegations(30, 1) // populate the validator set
+
+	// Stage a HistoricalInfo entry. Use a height the staking module would
+	// not currently retain via its own pruning — we're driving the state
+	// directly to validate the read path, not exercising BeginBlocker.
+	const targetHeight = int64(28210000)
+	vals, err := s.App.StakingKeeper.GetAllValidators(s.Ctx)
+	s.Require().NoError(err)
+	s.Require().NotEmpty(vals, "test setup should bond at least one validator")
+
+	hi := stakingtypes.HistoricalInfo{
+		Header: cmtproto.Header{
+			ChainID: types.ColumbusChainID,
+			Height:  targetHeight,
+			Time:    time.Unix(1700000000, 0).UTC(),
+		},
+		Valset: vals,
+	}
+	s.Require().NoError(s.App.StakingKeeper.SetHistoricalInfo(s.Ctx, targetHeight, &hi))
+
+	querier := stakingkeeper.Querier{Keeper: s.App.StakingKeeper}
+	ss := s.App.GetSubspace(stakingtypes.ModuleName)
+	qs := customstaking.NewLegacyQueryServer(
+		querier, ss, s.App.StakingKeeper,
+		s.App.AppCodec(), s.App.GetKey(stakingtypes.StoreKey),
+	)
+
+	req := &stakingtypes.QueryHistoricalInfoRequest{Height: targetHeight}
+
+	// Sanity: at a post-migration height the SDK's indexed path reads
+	// big-endian-uint64 keys (which is what SetHistoricalInfo just wrote).
+	postCtx := s.Ctx.WithBlockHeight(28214400)
+	resp, err := qs.HistoricalInfo(postCtx, req)
+	s.Require().NoError(err, "sanity: post-migration indexed read should succeed")
+	s.Require().NotNil(resp.Hist)
+	s.Require().Equal(targetHeight, resp.Hist.Header.Height)
+
+	// Simulate pre-migration archive state: rewrite every 0x50 entry from
+	// big-endian to string-format keys.
+	s.rekeyHistoricalInfoToLegacyFormat()
+
+	preCtx := s.Ctx.WithBlockHeight(28214399)
+	resp, err = qs.HistoricalInfo(preCtx, req)
+
+	// THIS is the assertion that fails before the fix and passes after it.
+	s.Require().NoError(err, "pre-migration height must still return historical info (regression of HistoricalInfo bug)")
+	s.Require().NotNil(resp.Hist)
+	s.Require().Equal(targetHeight, resp.Hist.Header.Height)
+	s.Require().Equal(types.ColumbusChainID, resp.Hist.Header.ChainID)
+}
+
+// TestHistoricalInfo_PostMigrationUsesIndex confirms the legacy reader is NOT
+// used at chain-head heights: at BlockHeight = MainnetStakingV5Height the
+// wrapper goes through the SDK's GetHistoricalInfo, which expects the binary
+// key format. After we rewrite to the legacy format, the post-migration call
+// must miss — proving the height gate short-circuits correctly.
+func (s *ValidatorDelegationsSuite) TestHistoricalInfo_PostMigrationUsesIndex() {
+	s.Setup(s.T(), types.ColumbusChainID)
+	s.seedValidatorWithDelegations(30, 1)
+
+	const targetHeight = int64(28210000)
+	vals, err := s.App.StakingKeeper.GetAllValidators(s.Ctx)
+	s.Require().NoError(err)
+
+	hi := stakingtypes.HistoricalInfo{
+		Header: cmtproto.Header{ChainID: types.ColumbusChainID, Height: targetHeight, Time: time.Unix(1700000000, 0).UTC()},
+		Valset: vals,
+	}
+	s.Require().NoError(s.App.StakingKeeper.SetHistoricalInfo(s.Ctx, targetHeight, &hi))
+
+	querier := stakingkeeper.Querier{Keeper: s.App.StakingKeeper}
+	ss := s.App.GetSubspace(stakingtypes.ModuleName)
+	qs := customstaking.NewLegacyQueryServer(
+		querier, ss, s.App.StakingKeeper,
+		s.App.AppCodec(), s.App.GetKey(stakingtypes.StoreKey),
+	)
+
+	// Rewrite into legacy string-format keys; with the height gate at
+	// post-migration the wrapper must NOT consult the legacy reader.
+	s.rekeyHistoricalInfoToLegacyFormat()
+
+	postCtx := s.Ctx.WithBlockHeight(28214400)
+	_, err = qs.HistoricalInfo(postCtx, &stakingtypes.QueryHistoricalInfoRequest{Height: targetHeight})
+	s.Require().Error(err, "at post-migration heights the legacy reader must NOT be consulted")
 }
