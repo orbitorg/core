@@ -129,11 +129,12 @@ func (q *LegacyQueryServer) Validator(ctx context.Context, req *stakingtypes.Que
 }
 
 func (q *LegacyQueryServer) ValidatorDelegations(ctx context.Context, req *stakingtypes.QueryValidatorDelegationsRequest) (*stakingtypes.QueryValidatorDelegationsResponse, error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	ensuredCtx := q.ensureLegacyParams(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ensuredCtx)
 	if legacyupgrade.IsPreStakingV5(sdkCtx.ChainID(), sdkCtx.BlockHeight()) {
 		return q.validatorDelegationsLegacy(sdkCtx, req)
 	}
-	return q.QueryServer.ValidatorDelegations(q.ensureLegacyParams(ctx), req)
+	return q.QueryServer.ValidatorDelegations(ensuredCtx, req)
 }
 
 // validatorDelegationsLegacy reproduces cosmos-sdk's unexported

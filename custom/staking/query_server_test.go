@@ -146,6 +146,43 @@ func (s *ValidatorDelegationsSuite) TestValidatorDelegations_ReproducesArchiveBu
 	)
 }
 
+// TestValidatorDelegations_LegacyPathKeepsLegacyParams covers the overlap
+// between the pre-staking-v5 fallback window and the older staking-param legacy
+// window. The fallback still needs ensureLegacyParams before it builds
+// DelegationResponse balances.
+func (s *ValidatorDelegationsSuite) TestValidatorDelegations_LegacyPathKeepsLegacyParams() {
+	s.Setup(s.T(), types.ColumbusChainID)
+
+	valAddr := s.seedValidatorWithDelegations(30, 1)
+
+	querier := stakingkeeper.Querier{Keeper: s.App.StakingKeeper}
+	ss := s.App.GetSubspace(stakingtypes.ModuleName)
+	qs := customstaking.NewLegacyQueryServer(
+		querier, ss, s.App.StakingKeeper,
+		s.App.AppCodec(), s.App.GetKey(stakingtypes.StoreKey),
+	)
+
+	params, err := s.App.StakingKeeper.GetParams(s.Ctx)
+	s.Require().NoError(err)
+
+	legacyParams := params
+	legacyParams.BondDenom = types.MicroLunaDenom
+	ss.SetParamSet(s.Ctx, &legacyParams)
+
+	currentParams := params
+	currentParams.BondDenom = "stake"
+	s.Require().NoError(s.App.StakingKeeper.SetParams(s.Ctx, currentParams))
+
+	s.dropReverseIndex()
+
+	req := &stakingtypes.QueryValidatorDelegationsRequest{ValidatorAddr: valAddr.String()}
+	queryCtx := s.Ctx.WithBlockHeight(18302999)
+	resp, err := qs.ValidatorDelegations(queryCtx, req)
+	s.Require().NoError(err)
+	s.Require().Len(resp.DelegationResponses, 1)
+	s.Require().Equal(types.MicroLunaDenom, resp.DelegationResponses[0].Balance.Denom)
+}
+
 // TestValidatorDelegations_LegacyPathPaginates exercises the legacy-iteration
 // path through pagination: it walks all delegations across multiple pages and
 // asserts that (a) every page returns delegations matching only the requested
