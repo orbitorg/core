@@ -277,7 +277,8 @@ func (q *LegacyQueryServer) historicalInfoLegacy(
 	}
 
 	store := ctx.KVStore(q.storeKey)
-	legacyKey := append(stakingtypes.HistoricalInfoKey, []byte(strconv.FormatInt(req.Height, 10))...)
+	legacyKey := append([]byte{}, stakingtypes.HistoricalInfoKey...)
+	legacyKey = append(legacyKey, []byte(strconv.FormatInt(req.Height, 10))...)
 	bz := store.Get(legacyKey)
 	if bz == nil {
 		return nil, status.Errorf(codes.NotFound, "historical info for height %d not found", req.Height)

@@ -8,10 +8,10 @@ import (
 
 	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
-	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	apptesting "github.com/classic-terra/core/v4/app/testing"
 	customstaking "github.com/classic-terra/core/v4/custom/staking"
 	"github.com/classic-terra/core/v4/types"
+	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -301,7 +301,8 @@ func (s *ValidatorDelegationsSuite) rekeyHistoricalInfoToLegacyFormat() {
 
 	for _, e := range entries {
 		store.Delete(e.oldKey)
-		legacyKey := append(stakingtypes.HistoricalInfoKey, []byte(strconv.FormatInt(e.height, 10))...)
+		legacyKey := append([]byte{}, stakingtypes.HistoricalInfoKey...)
+		legacyKey = append(legacyKey, []byte(strconv.FormatInt(e.height, 10))...)
 		store.Set(legacyKey, e.value)
 	}
 }
