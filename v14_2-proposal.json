@@ -1,0 +1,17 @@
+{
+  "messages": [
+    {
+      "@type": "/cosmos.upgrade.v1beta1.MsgSoftwareUpgrade",
+      "authority": "terra10d07y265gmmuvt4z0w9aw880jnsr700juxf95n",
+      "plan": {
+        "name": "v14_2",
+        "height": "28486158",
+        "info": ""
+      }
+    }
+  ],
+  "metadata": "ipfs://TODO",
+  "deposit": "1000000000000uluna",
+  "title": "Software Upgrade to v4.0.1",
+  "summary": "https://github.com/classic-terra/documents/blob/main/proposals/v14_2-proposal.md"
+}
