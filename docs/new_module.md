@@ -10,6 +10,8 @@ Zero impact on consensus security
 Clean modular design aligned with Cosmos SDK standards
 Scalable foundation for future enhancements (oracle tuning, fee-based rewards, etc.)
 
+Important: The module ships with enabled = false. Activation requires a separate governance proposal once real yield sources (MM2, protocol fees) are confirmed live. This safeguard prevents reward pool depletion before sustainable yield exists.
+
 Motivation
 Utility Expansion:
 USTC currently lacks native Layer 1 utility. Introducing staking creates immediate on-chain engagement.
@@ -37,6 +39,7 @@ Scope of Work
    Voting power
    Consensus mechanics
    LUNC remains the only staking asset for consensus.
+   USTC principal is not subject to slashing for consensus faults. Because USTC stake does not participate in consensus security, validator misbehavior on the LUNC side does not automatically reduce USTC principal. Any penalty model for USTC delegators (if desired in future phases) must be a separate governance-controlled parameter and should affect rewards before principal.
 
 2. Core Functionality
    Delegation System
@@ -45,15 +48,27 @@ Scope of Work
    Validator serves as accounting endpoint only
 
 Unbonding Logic
-Configurable unbonding period
-Optional unbond with penalty (parameter[eg 7days])
+Configurable unbonding period (governance parameter)
+Optional instant unbond: user may exit immediately by paying a penalty fee (instant_unbond_fee_bps, disabled initially)
 Reward Distribution
 Rewards distributed proportionally based on USTC stake
-Epoch-based distribution
+Epoch-based distribution; only validators in Bonded status at epoch start are eligible
 Independent reward pool
 Reward Pool
-Funded via governance-controlled mechanisms
-3. Parameters (Governance Controlled)
+Funded via MsgFundUSTCRewardPool (governance-only in Phase 1; a fund_pool_admins parameter may whitelist additional addresses in future phases via governance)
+When pool balance is insufficient, reward emission stops for that epoch; principal is not affected and a pool_exhausted event is emitted so delegators and operators are notified
+
+3. Validator Status Handling
+   The module reads validator status from x/staking (read-only) at EndBlock and applies the following rules:
+
+Jailed validator: new USTC delegations are blocked; reward accrual stops at the start of the next epoch (the epoch in which jailing occurs is still distributed normally; rewards are not retroactively removed). In Phase 1, rewards are paused only — redirection to other delegators is not implemented. No retroactive catch-up after unjailing.
+Unjailed validator: reward accrual resumes from the next epoch start forward. No retroactive catch-up for the jailed period.
+Tombstoned / permanently removed validator: all USTC delegations to that validator enter forced unbonding immediately, using a governance-controlled forced_unbond_time parameter. Users may also redelegate out before unbonding completes.
+Unbonding / Unbonded validator (not jailed): reward accrual pauses; new delegations are blocked. Existing delegations remain; users may redelegate or wait.
+Redelegation in transit to a tombstoned validator: the redelegation is cancelled and funds are returned to the source validator delegation.
+
+These rules ensure that USTC delegators are not penalised for consensus faults while preventing rewards from accruing to inactive or misbehaving validators.
+4. Parameters (Governance Controlled)
    Initial parameters include:
    enabled
    bond_denom = uusd
@@ -64,19 +79,21 @@ Funded via governance-controlled mechanisms
    max_validator_share
    min_delegation
    instant_unbond_fee_bps (disabled initially)
+   forced_unbond_time (applies when a validator is tombstoned)
+   fund_pool_admins (initially empty; governance may whitelist addresses to call MsgFundUSTCRewardPool)
    oracle_enabled (disabled in Phase 1)
    All parameters adjustable via governance.
 
-4. Message Types
+5. Message Types
    MsgDelegateUSTC
    MsgUndelegateUSTC
    MsgBeginRedelegateUSTC
    MsgWithdrawUSTCRewards
    MsgFundUSTCRewardPool
    MsgUpdateUSTCParams
-   MsgEmergencyPause
+   MsgEmergencyPause — halts new delegations and reward distribution immediately; unbonding and redelegation out remain available. Callable by governance only. Intended for critical incidents (e.g. discovered exploit, pool manipulation). Resumption requires a separate governance proposal.
 
-5. Reward Model (Phase 1)
+6. Reward Model (Phase 1)
    Fixed Reward Model (Initial Implementation):
    Rewards emitted from a pre-funded pool
    APR set conservatively via governance
@@ -86,7 +103,7 @@ Funded via governance-controlled mechanisms
    Predictability
    Controlled rollout
 
-6. Oracle Mechanism (Future Phase)
+7. Oracle Mechanism (Future Phase)
    A separate lightweight oracle system may be introduced in later phases to:
    Suggest APR adjustments
    Monitor staking participation
@@ -95,26 +112,28 @@ Funded via governance-controlled mechanisms
    NOT interfere with Terra’s existing price oracle
    Be bounded by governance-defined limits
 
-7. Integration
+8. Integration
    Validators
    Act as delegation endpoints
-   May receive commission on USTC rewards
+   Receive commission on USTC rewards at the rate set in x/staking (read live at each reward distribution; no separate USTC commission parameter in Phase 1)
    No impact on consensus power
    Wallets & dApps
    Not required for Phase 1
    Standard CLI / LCD / gRPC support included
    UI integrations to follow in later phases
 
-8. Testnet Deployment & QA
+9. Testnet Deployment & QA
    Deploy module on testnet for validation.
    Testing includes:
    Delegation / undelegation flows
    Reward accrual accuracy
-   Edge cases (partial unbonding, redelegation)
-   Stress testing reward pool behavior
+   Validator status transitions: jailing, unjailing, tombstoning, and unbonded/unbonding status — and their effect on reward accrual, new delegation blocking, and forced unbonding
+   Edge cases (partial unbonding, redelegation, redelegation in transit to tombstoned validator)
+   Stress testing reward pool behavior including pool exhaustion
+   EmergencyPause and resumption flow
    Publish results for validator and community review.
 
-9. Documentation
+10. Documentation
    Module specification
    Validator guidance
    CLI / API usage examples
@@ -134,9 +153,9 @@ Core functionality development (delegation, rewards, unbonding)
 9–10
 Testnet deployment and QA
 11
-Documentation and community review
+Address testnet and community review findings; fix issues; final code freeze
 12
-Governance proposal for activation (Phase 2)
+Documentation, validator coordination, governance proposal for activation (Phase 2)
 
 
 
@@ -159,12 +178,3 @@ Support native USTC staking on Layer 1
 Provide a new utility layer for USTC holders
 Maintain full consensus integrity
 Establish a foundation for future revenue-driven rewards
-
-Conclusion
-This proposal delivers a safe, modular, and scalable implementation of USTC staking, aligned with the direction approved by the community in Proposal 12219.
-It prioritizes:
-Simplicity
-Security
-Incremental rollout
-We invite the Terra Classic community to support this technical implementation and participate in testing and validation.
-Vegas & Orbit Labs
